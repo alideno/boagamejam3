@@ -101,6 +101,7 @@ func Update_Game(node):
 func Get_Moveable_Areas():
 	Reset_Tile_Colors()
 	var Flow = get_node("Flow")
+	var highlight
 	# Clearing the arrays
 	Areas.clear()
 	Special_Area.clear()
