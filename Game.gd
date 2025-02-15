@@ -6,8 +6,6 @@ var Turn = 0
 var Location_X = ""
 var Location_Y = ""
 
-var unfuseable = ["King","ElitePawn"]
-
 var pos = Vector2(50, 50)
 var Areas: PackedStringArray
 # Special_Area is used for castling/en passant conditions.
@@ -81,7 +79,7 @@ func isValidFusion(selCoords: Vector2, targetCoords: Vector2, selectedPiece: Nod
 		return false  # No valid fusion exists
 
 	# Special movement rules for pawns
-	if selectedPiece.name == "Pawn" or targetPiece.name == "Pawn":
+	if selectedPiece.name == "Pawn" :
 		var piece_color = selectedPiece.Item_Color
 		if piece_color == 0:
 			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y - 1)
@@ -179,6 +177,8 @@ func processFuse(location: String):
 	# Load the fusion piece script dynamically
 	var fused_script_path = "res://addons/Chess/Scripts/" + fusionPiece + ".gd"
 	var fused_script = load(fused_script_path)
+
+
 	if not fused_script:
 		print("Error: Could not load fusion piece script at " + fused_script_path)
 		return
@@ -188,14 +188,15 @@ func processFuse(location: String):
 	FusedPiece.name = fusionPiece
 	FusedPiece.set("Item_Color", capturingPiece.get("Item_Color"))
 	FusedPiece.position = targetNode.position
-
+	
 	# Remove old pieces
 	capturingPiece.queue_free()
 	targetPiece.queue_free()
 
-	# Add the new fused piece to the board
 	targetNode.add_child(FusedPiece)
-
+	
+	FusedPiece.global_position = targetNode.global_position + Vector2(50,50)
+	
 	Update_Game(targetNode)
 
 func getFusionPieceName(piece1: String, piece2: String) -> String:
@@ -216,8 +217,14 @@ func processCapture(location: String):
 		if i == targetNode.name:
 			var piece = get_node("Flow/" + Selected_Node).get_child(0)
 			if targetNode.get_child(0).name == "King":
-				print("Damn, you win!")
+				var color
+				if(1 == targetNode.get_child(0).Item_Color):
+					color = "white"
+				else: 
+					color = "black"
+				print(color  + " wins")
 				get_tree().change_scene_to_file("res://endgame.tscn")
+				
 			targetNode.get_child(0).free()
 			piece.reparent(targetNode)
 			piece.position = pos
@@ -278,30 +285,20 @@ func Get_Moveable_Areas():
 		Get_Horse()
 	elif Piece.name == "ElitePawn":
 		Get_Elite_Pawn(Piece, Flow)
-
-	
-	var newArea = []
+	elif Piece.name == "GuardedKnight":
+		Get_Guarded_Knight(Piece, Flow)
+	print(Areas)
+		
 	for area in Areas:
-		var temp = get_node("Flow/" + area).get_child(0)
-		if temp == null:
-			newArea.append(area)
-		if (temp != null) and ((temp.name not in unfuseable) or (Piece.Item_Color != temp.Item_Color)):
-			newArea.append(area)
-		if(temp != null) and (temp.name in unfuseable) and (Piece.Item_Color == temp.Item_Color):
-			continue
 		var tile = Flow.get_node(area)
 		if tile is TextureButton:
 			tile.texture_normal = load("res://assets/highlight.png")
-	Areas = newArea
 
 
 # ------------------------------------------------------------------
 # (The following movement functions remain similar to your original code.)
 # ------------------------------------------------------------------
 
-func Get_Crusedar(Piece,Flow):
-	var piece_color = Piece.Item_Color
-	print("asdasd")
 
 func Get_Pawn(Piece, Flow):
 	var piece_color = Piece.Item_Color
@@ -343,8 +340,8 @@ func Get_Pawn(Piece, Flow):
 				Areas.append(diag_right)
 
 func Get_Around(Piece):
-	var Flow = get_node("Flow")  # ADDED: Declare Flow variable
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
+	var Flow = get_node("Flow")
+	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
 	var positions = [
 		Location_X + "-" + str(int(Location_Y) + 1),
 		Location_X + "-" + str(int(Location_Y) - 1),
@@ -361,10 +358,7 @@ func Get_Around(Piece):
 			if target.get_child_count() == 0:
 				Areas.append(pos_str)
 			else:
-				# CHANGED: Add if the occupying piece is of reversed color.
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(pos_str)
+				Areas.append(pos_str)
 					
 func Get_Rows(Flow):
 	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
