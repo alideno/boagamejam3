@@ -12,12 +12,12 @@ func _ready():
 	# stop negative numbers from happening
 	self.add_theme_constant_override("h_separation", 0)
 	self.add_theme_constant_override("v_separation", 0)
-	var color = false
+	var color = true
 	if Board_X_Size < 0 || Board_Y_Size < 0:
 		return
 	var Number_X = 0
 	var Number_Y = 0
-	# Set up the board
+	# Set up the board using TextureButtons for each square
 	while Number_Y != Board_Y_Size:
 		self.size.y += Tile_Y_Size + 5
 		self.size.x += Tile_X_Size + 5
@@ -47,6 +47,7 @@ func _ready():
 	Regular_Game()
 
 func Regular_Game():
+	# Black pieces (assume Item_Color 1)
 	get_node("0-0").add_child(Summon("Rook", 1))
 	get_node("1-0").add_child(Summon("Knight", 1))
 	get_node("2-0").add_child(Summon("Bishop", 1))
@@ -65,6 +66,7 @@ func Regular_Game():
 	get_node("6-1").add_child(Summon("Pawn", 1))
 	get_node("7-1").add_child(Summon("Pawn", 1))
 	
+	# White pieces (assume Item_Color 0)
 	get_node("0-7").add_child(Summon("Rook", 0))
 	get_node("1-7").add_child(Summon("Knight", 0))
 	get_node("2-7").add_child(Summon("Bishop", 0))
@@ -89,6 +91,10 @@ func Summon(Piece_Name: String, color: int):
 		"Pawn":
 			Piece = Pawn.new()
 			Piece.name = "Pawn"
+		"ElitePawn":
+			# In case you need to directly summon an ElitePawn.
+			Piece = Pawn.new()  # Or use ElitePawn.new() if you have a separate class
+			Piece.name = "ElitePawn"
 		"King":
 			Piece = King.new()
 			Piece.name = "King"
@@ -104,6 +110,9 @@ func Summon(Piece_Name: String, color: int):
 		"Bishop":
 			Piece = Bishop.new()
 			Piece.name = "Bishop"
+		"ElitePawn":
+			Piece = ElitePawn.new()  # or ElitePawn.new() if using a dedicated class
+			Piece.name = "ElitePawn"
 	Piece.Item_Color = color
 	Piece.position = Vector2(Tile_X_Size / 2, Tile_Y_Size / 2)
 	return Piece
