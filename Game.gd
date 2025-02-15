@@ -109,18 +109,17 @@ func processEnPassant(location: String):
 			return
 
 func processFuse(location: String):
-	# Fusion: when a pawn captures a friendly pawn, replace the capturing Pawn with an ElitePawn.
 	var targetNode = get_node("Flow/" + location)
 	var capturingPawn = get_node("Flow/" + Selected_Node).get_child(0)
 	# Remove the target friendly pawn.
 	targetNode.get_child(0).free()
-	# Create a new ElitePawn instance.
+	
 	var elitePawn = preload("res://addons/Chess/Scripts/ElitePawn.gd").new()
-	elitePawn.Item_Color = capturingPawn.Item_Color
+	elitePawn.name = "ElitePawn"   # Ensure its name is set
+	# Option 2: Alternatively, you can use set()/get() if the property isn't directly accessible:
+	elitePawn.set("Item_Color", capturingPawn.get("Item_Color"))
 	elitePawn.position = pos
-	# Remove the capturing pawn.
 	capturingPawn.queue_free()
-	# Place the ElitePawn in the target square.
 	targetNode.add_child(elitePawn)
 	Update_Game(targetNode)
 
@@ -169,6 +168,7 @@ func Update_Game(node):
 		node.get_child(0).Castling = false
 
 func Get_Moveable_Areas():
+	
 	var Flow = get_node("Flow")
 	Areas.clear()
 	Special_Area.clear()
@@ -187,15 +187,46 @@ func Get_Moveable_Areas():
 		Get_Rows(Flow)
 	elif Piece.name == "Knight":
 		Get_Horse()
+	elif Piece.name == "ElitePawn":
+		Get_Elite_Pawn(Piece, Flow)
+	print(Areas)
 		
 	for area in Areas:
 		var tile = Flow.get_node(area)
 		if tile is TextureButton:
 			tile.texture_normal = load("res://assets/highlight.png")
 
+
 # ------------------------------------------------------------------
 # (The following movement functions remain similar to your original code.)
 # ------------------------------------------------------------------
+
+func Get_Crusedar(Piece,Flow):
+	var piece_color = Piece.Item_Color
+	print("asdasd")
+
+func Get_Elite_Pawn(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	if piece_color == 0:  # White pawn
+		var forward_one = Location_X + "-" + str(int(Location_Y) - 1)
+		var diag_left = str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)
+		var diag_right = str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)
+		if not Is_Null(forward_one) and (Flow.get_node(forward_one).get_child_count() == 0 or Flow.get_node(forward_one).get_child(0).Item_Color != piece_color):
+			Areas.append(forward_one)
+		if not Is_Null(diag_left) and (Flow.get_node(diag_left).get_child_count() == 0 or Flow.get_node(diag_left).get_child(0).Item_Color != piece_color):
+			Areas.append(diag_left)
+		if not Is_Null(diag_right) and (Flow.get_node(diag_right).get_child_count() == 0 or Flow.get_node(diag_right).get_child(0).Item_Color != piece_color):
+			Areas.append(diag_right)
+	else:  # Black pawn
+		var forward_one = Location_X + "-" + str(int(Location_Y) + 1)
+		var diag_left = str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)
+		var diag_right = str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)
+		if not Is_Null(forward_one) and (Flow.get_node(forward_one).get_child_count() == 0 or Flow.get_node(forward_one).get_child(0).Item_Color != piece_color):
+			Areas.append(forward_one)
+		if not Is_Null(diag_left) and (Flow.get_node(diag_left).get_child_count() == 0 or Flow.get_node(diag_left).get_child(0).Item_Color != piece_color):
+			Areas.append(diag_left)
+		if not Is_Null(diag_right) and (Flow.get_node(diag_right).get_child_count() == 0 or Flow.get_node(diag_right).get_child(0).Item_Color != piece_color):
+			Areas.append(diag_right)
 
 func Get_Pawn(Piece, Flow):
 	var piece_color = Piece.Item_Color
