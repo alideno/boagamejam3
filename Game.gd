@@ -60,6 +60,8 @@ func _on_flow_send_location(location: String):
 				# Win conditions
 				if node.get_child(0).name == "King":
 					print("Damn, you win!")
+					get_tree().change_scene_to_file("res://endgame.tscn")
+					print("wtf")
 				node.get_child(0).free()
 				Piece.reparent(node)
 				Piece.position = pos
