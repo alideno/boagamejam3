@@ -72,13 +72,14 @@ func _on_flow_send_location(location: String):
 				Piece.reparent(node)
 				Piece.position = pos
 				Update_Game(node)
-	Reset_Tile_Colors()
 
 func Update_Game(node):
 	Selected_Node = ""
 	if Turn == 0:
+		Reset_Tile_Colors()
 		Turn = 1
 	else:
+		Reset_Tile_Colors()
 		Turn = 0
 	
 	# get the en-passantable pieces and undo them
