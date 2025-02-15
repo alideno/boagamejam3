@@ -415,10 +415,10 @@ func Get_Rook(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
-				if candidateNode.get_child(0).Item_Color != piece_color:
-					Areas.append(candidate)
+			else:
+				Areas.append(candidate)
 				break
-
+				
 func Get_Bishop(Piece, Flow):
 	var piece_color = Piece.Item_Color
 	var diagOffsets = [
@@ -713,6 +713,7 @@ func Get_Guarded_Rook(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -757,6 +758,7 @@ func Get_Siege_Camp(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -805,6 +807,7 @@ func Get_Cathedral(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -900,6 +903,7 @@ func Get_Guarded_Queen(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -948,6 +952,7 @@ func Get_Valkyre(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -1001,6 +1006,7 @@ func Get_Archqueen(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break

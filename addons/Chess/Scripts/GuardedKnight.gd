@@ -11,4 +11,4 @@ func _process(_delta):
 		if Item_Color == 0:
 			self.texture = load("res://assets/pieces/G-knight.png")
 		elif Item_Color == 1:
-			self.texture = load("res://assets/pieces/Sprite-0004.png")
+			self.texture = load("res://assets/pieces/G-knight.png")
