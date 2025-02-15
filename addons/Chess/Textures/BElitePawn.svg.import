@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyyimb4gremt1"
-path="res://.godot/imported/highlight.png-7fc7338fdd68380078a478e16145be24.ctex"
+uid="uid://cjxavp7dh03mu"
+path="res://.godot/imported/BElitePawn.svg-01bb5e4ae79a68bdf78d8a25067e540f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/highlight.png"
-dest_files=["res://.godot/imported/highlight.png-7fc7338fdd68380078a478e16145be24.ctex"]
+source_file="res://addons/Chess/Textures/BElitePawn.svg"
+dest_files=["res://.godot/imported/BElitePawn.svg-01bb5e4ae79a68bdf78d8a25067e540f.ctex"]
 
 [params]
 
@@ -32,3 +32,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false
