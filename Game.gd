@@ -29,6 +29,7 @@ func parseLocation(location: String):
 
 func processSelection(location: String):
 	var targetNode = get_node("Flow/" + location)
+
 	# If no piece is selected yet, select a friendly piece.
 	if Selected_Node == "":
 		if targetNode.get_child_count() != 0 and targetNode.get_child(0).Item_Color == Turn:
@@ -39,34 +40,57 @@ func processSelection(location: String):
 	var selectedPiece = get_node("Flow/" + Selected_Node).get_child(0)
 	if targetNode.get_child_count() != 0:
 		var targetPiece = targetNode.get_child(0)
+
 		# Friendly piece on target.
 		if targetPiece.Item_Color == Turn:
-			#if targetPiece.name == "Rook":
-				#processCastling(location)
-			# Fusion: only allow if both are pawns and the target lies on a valid diagonal.
-			if targetPiece.name == "Pawn" and selectedPiece.name == "Pawn":
-				var selCoords = parseLocationToCoords(Selected_Node)
-				var targetCoords = parseLocationToCoords(location)
-				if isValidPawnFusion(selCoords, targetCoords, selectedPiece.Item_Color):
-					processFuse(location)
-				else:
-					reselectPiece(location)
+			var selCoords = parseLocationToCoords(Selected_Node)
+			var targetCoords = parseLocationToCoords(location)
+
+			# Check if fusion is allowed
+			if isValidFusion(selCoords, targetCoords, selectedPiece, targetPiece):
+				processFuse(location)
 			else:
 				reselectPiece(location)
+
 		# Enemy piece on target.
 		else:
 			if targetPiece.name == "Pawn" and targetPiece.get("En_Passant") == true and Special_Area.size() != 0 and Special_Area[0] == targetNode.name:
 				processEnPassant(location)
-			else:
+			else: # if anyone wants to add the checkmate mechanizm than this is a nice place to start 
 				processCapture(location)
 	else:
 		# Empty square: attempt a normal move.
 		processMove(location)
 
+
+
 # Helper: Parse a location string ("x-y") into a Vector2 with integer coordinates.
 func parseLocationToCoords(location: String) -> Vector2:
 	var parts = location.split("-")
 	return Vector2(int(parts[0]), int(parts[1]))
+	
+
+func isValidFusion(selCoords: Vector2, targetCoords: Vector2, selectedPiece: Node, targetPiece: Node) -> bool:
+	# Ensure both pieces exist and belong to the same player
+	if not selectedPiece or not targetPiece or selectedPiece.Item_Color != targetPiece.Item_Color:
+		return false
+
+	# Check if fusion is possible using the Fusion_Piece_Map
+	var fusionName = getFusionPieceName(selectedPiece.name, targetPiece.name)
+	if fusionName == "":
+		return false  # No valid fusion exists
+
+	# Special movement rules for pawns
+	if selectedPiece.name == "Pawn" or targetPiece.name == "Pawn":
+		var piece_color = selectedPiece.Item_Color
+		if piece_color == 0:
+			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y - 1)
+		else:
+			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y + 1)
+
+	# If no special movement rules apply, allow fusion
+	return true
+	
 
 # Helper: For a pawn, fusion (friendly capture) is allowed only if the target is on the correct diagonal.
 func isValidPawnFusion(selCoords: Vector2, targetCoords: Vector2, piece_color: int) -> bool:
@@ -110,20 +134,81 @@ func processEnPassant(location: String):
 			Update_Game(pawn.get_parent())
 			return
 
+var Fusion_Piece_Map = {  
+	# Pawn fusions  
+	["Pawn", "Pawn"]: "ElitePawn",  
+
+	# Knight fusions  
+	["Pawn", "Knight"]: "GuardedKnight",  
+	["Knight", "Knight"]: "Cavalier",  
+
+	# Bishop fusions  
+	["Pawn", "Bishop"]: "GuardedBishop",  
+	["Knight", "Bishop"]: "Crusader",  
+	["Bishop", "Bishop"]: "Pope",  
+
+	# Rook fusions  
+	["Pawn", "Rook"]: "GuardedRook",  
+	["Knight", "Rook"]: "SiegeCamp",  
+	["Bishop", "Rook"]: "Cathedral",  
+	["Rook", "Rook"]: "Fortress",  
+
+	# Queen fusions  
+	["Pawn", "Queen"]: "GuardedQueen",  
+	["Knight", "Queen"]: "Valkyre",  
+	["Bishop", "Queen"]: "Archqueen",  
+	["Rook", "Queen"]: "FortressQueen",  
+	["Queen", "Queen"]: "Empress"  
+}
+
 func processFuse(location: String):
 	var targetNode = get_node("Flow/" + location)
-	var capturingPawn = get_node("Flow/" + Selected_Node).get_child(0)
-	# Remove the target friendly pawn.
-	targetNode.get_child(0).free()
+	var capturingPiece = get_node("Flow/" + Selected_Node).get_child(0)
+	var targetPiece = targetNode.get_child(0)
+
+	# Ensure both pieces exist and are of the same color.
+	if not capturingPiece or not targetPiece or capturingPiece.Item_Color != targetPiece.Item_Color:
+		return
 	
-	var elitePawn = preload("res://addons/Chess/Scripts/ElitePawn.gd").new()
-	elitePawn.name = "ElitePawn"   # Ensure its name is set
-	# Option 2: Alternatively, you can use set()/get() if the property isn't directly accessible:
-	elitePawn.set("Item_Color", capturingPawn.get("Item_Color"))
-	elitePawn.position = pos
-	capturingPawn.queue_free()
-	targetNode.add_child(elitePawn)
+	# Get fusion name
+	var fusionPiece = getFusionPieceName(capturingPiece.name, targetPiece.name)
+	if fusionPiece == "":
+		print("Error: No valid fusion for " + capturingPiece.name + " + " + targetPiece.name)
+		return
+	
+	# Load the fusion piece script dynamically
+	var fused_script_path = "res://addons/Chess/Scripts/" + fusionPiece + ".gd"
+	var fused_script = load(fused_script_path)
+	if not fused_script:
+		print("Error: Could not load fusion piece script at " + fused_script_path)
+		return
+	
+	# Create the new fused piece
+	var FusedPiece = fused_script.new()
+	FusedPiece.name = fusionPiece
+	FusedPiece.set("Item_Color", capturingPiece.get("Item_Color"))
+	FusedPiece.position = targetNode.position
+
+	# Remove old pieces
+	capturingPiece.queue_free()
+	targetPiece.queue_free()
+
+	# Add the new fused piece to the board
+	targetNode.add_child(FusedPiece)
+
 	Update_Game(targetNode)
+
+func getFusionPieceName(piece1: String, piece2: String) -> String:
+	var key1 = [piece1, piece2]
+	var key2 = [piece2, piece1]  # Check both orders
+	
+	if key1 in Fusion_Piece_Map:
+		return Fusion_Piece_Map[key1]
+	if key2 in Fusion_Piece_Map:
+		return Fusion_Piece_Map[key2]
+	
+	return ""  # No valid fusion found
+
 
 func processCapture(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -132,11 +217,13 @@ func processCapture(location: String):
 			var piece = get_node("Flow/" + Selected_Node).get_child(0)
 			if targetNode.get_child(0).name == "King":
 				print("Damn, you win!")
+				get_tree().change_scene_to_file("res://endgame.tscn")
 			targetNode.get_child(0).free()
 			piece.reparent(targetNode)
 			piece.position = pos
 			Update_Game(targetNode)
 			return
+
 
 func processMove(location: String):
 	var targetNode = get_node("Flow/" + location)
