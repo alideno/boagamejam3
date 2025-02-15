@@ -72,6 +72,7 @@ func _on_flow_send_location(location: String):
 				Piece.reparent(node)
 				Piece.position = pos
 				Update_Game(node)
+	Reset_Tile_Colors()
 
 func Update_Game(node):
 	Selected_Node = ""
@@ -98,6 +99,7 @@ func Update_Game(node):
 
 # Below is the movement that is used for the pieces
 func Get_Moveable_Areas():
+	Reset_Tile_Colors()
 	var Flow = get_node("Flow")
 	# Clearing the arrays
 	Areas.clear()
@@ -118,7 +120,10 @@ func Get_Moveable_Areas():
 	elif Piece.name == "Knight":
 		Get_Horse()#done
 	
-	print(Areas)
+	for area in Areas:
+		var tile = Flow.get_node(area)
+		if tile is TextureButton:
+			tile.texture_normal = load("res://assets/highlight.png")
 
 func Get_Pawn(Piece, Flow):
 	var piece_color = Piece.Item_Color  # Using the passed Piece's color
@@ -383,3 +388,13 @@ func Is_Null(Location):
 		return true
 	else:
 		return false
+
+
+func Reset_Tile_Colors():
+	var Flow = get_node("Flow")
+	for y in range(8):
+		for x in range(8):
+			var tile = Flow.get_node(str(x) + "-" + str(y))
+			if tile is TextureButton:
+				var is_white = (x + y) % 2 == 0
+				tile.texture_normal = load("res://assets/white_board.png") if is_white else load("res://assets/black_board.png")

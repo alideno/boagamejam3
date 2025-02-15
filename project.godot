@@ -15,9 +15,14 @@ run/main_scene="res://board.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
 
+[display]
+
+window/size/viewport_width=800
+window/size/viewport_height=800
+
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Chess/plugin.cfg")
+enabled=PackedStringArray()
 
 [filesystem]
 
