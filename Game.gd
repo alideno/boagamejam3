@@ -21,26 +21,24 @@ func _on_flow_send_location(location: String):
 		Location_X += location.substr(number, 1)
 		number += 1
 	Location_Y = location.substr(number + 1)
-	# Now... we need to figure out how to select the pieces. If there is a valid move, do stuff.
-	# If we re-select, just go to that other piece
-	if Selected_Node == "" && node.get_child_count() != 0 && node.get_child(0).Item_Color == Turn:
+	
+	# If no piece is selected and the clicked square has one of our pieces, select it.
+	if Selected_Node == "" and node.get_child_count() != 0 and node.get_child(0).Item_Color == Turn:
 		Selected_Node = location
 		Get_Moveable_Areas()
-	elif Selected_Node != "" && node.get_child_count() != 0 && node.get_child(0).Item_Color == Turn && node.get_child(0).name == "Rook":
-		# Castling
+	# Castling remains the same:
+	elif Selected_Node != "" and node.get_child_count() != 0 and node.get_child(0).Item_Color == Turn and node.get_child(0).name == "Rook":
 		for i in Areas:
 			if i == node.name:
 				var king = get_node("Flow/" + Selected_Node).get_child(0)
 				var rook = node.get_child(0)
-				# Using a seperate array because Areas wouldn't be really consistant...
 				king.reparent(get_node("Flow/" + Special_Area[1]))
 				rook.reparent(get_node("Flow/" + Special_Area[0]))
 				king.position = pos
 				rook.position = pos
-				# We have to get the parent because it will break lmao.
 				Update_Game(king.get_parent())
-	# En Passant
-	elif Selected_Node != "" && node.get_child_count() != 0 && node.get_child(0).Item_Color != Turn && node.get_child(0).name == "Pawn" && Special_Area.size() != 0 && Special_Area[0] == node.name && node.get_child(0).get("En_Passant") == true:
+	# En Passant remains the same:
+	elif Selected_Node != "" and node.get_child_count() != 0 and node.get_child(0).Item_Color != Turn and node.get_child(0).name == "Pawn" and Special_Area.size() != 0 and Special_Area[0] == node.name and node.get_child(0).get("En_Passant") == true:
 		for i in Special_Area:
 			if i == node.name:
 				var pawn = get_node("Flow/" + Selected_Node).get_child(0)
@@ -48,29 +46,27 @@ func _on_flow_send_location(location: String):
 				pawn.reparent(get_node("Flow/" + Special_Area[1]))
 				pawn.position = pos
 				Update_Game(pawn.get_parent())
-	elif Selected_Node != "" && node.get_child_count() != 0 && node.get_child(0).Item_Color == Turn:
-		# Re-select
-		Selected_Node = location
-		Get_Moveable_Areas()
-	elif Selected_Node != "" && node.get_child_count() != 0 && node.get_child(0).Item_Color != Turn:
-		# Taking over a piece
+	# ********* NEW CAPTURE BLOCK *********
+	# When a piece is selected and the clicked square is occupied,
+	# capture that piece regardless of its color.
+	elif Selected_Node != "" and node.get_child_count() != 0:
 		for i in Areas:
 			if i == node.name:
-				var Piece = get_node("Flow/" + Selected_Node).get_child(0)
-				# Win conditions
+				var moving_piece = get_node("Flow/" + Selected_Node).get_child(0)
+				# Optionally, check for win conditions (e.g. capturing a King)
 				if node.get_child(0).name == "King":
 					print("Damn, you win!")
 				node.get_child(0).free()
-				Piece.reparent(node)
-				Piece.position = pos
+				moving_piece.reparent(node)
+				moving_piece.position = pos
 				Update_Game(node)
-	elif Selected_Node != "" && node.get_child_count() == 0:
-		# Moving a piece
+	# Moving a piece to an empty square remains the same:
+	elif Selected_Node != "" and node.get_child_count() == 0:
 		for i in Areas:
 			if i == node.name:
-				var Piece = get_node("Flow/" + Selected_Node).get_child(0)
-				Piece.reparent(node)
-				Piece.position = pos
+				var moving_piece = get_node("Flow/" + Selected_Node).get_child(0)
+				moving_piece.reparent(node)
+				moving_piece.position = pos
 				Update_Game(node)
 	Reset_Tile_Colors()
 
@@ -78,8 +74,10 @@ func Update_Game(node):
 	Selected_Node = ""
 	if Turn == 0:
 		Turn = 1
+		$Label.text = "Black's Turn!"
 	else:
 		Turn = 0
+		$Label.text = "White's Turn!"
 	
 	# get the en-passantable pieces and undo them
 	var things = get_node("Flow").get_children()
@@ -128,60 +126,47 @@ func Get_Moveable_Areas():
 func Get_Pawn(Piece, Flow):
 	var piece_color = Piece.Item_Color  # Using the passed Piece's color
 
-	if piece_color == 0:  # White pawn
-		# Forward move one step (must be empty)
+	if piece_color == 0:  # White pawn moves upward
 		var forward_one = Location_X + "-" + str(int(Location_Y) - 1)
 		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
 			Areas.append(forward_one)
-			# Forward move two steps on first move (both squares must be empty)
 			if Piece.Double_Start:
 				var forward_two = Location_X + "-" + str(int(Location_Y) - 2)
 				if not Is_Null(forward_two) and Flow.get_node(forward_two).get_child_count() == 0:
 					Areas.append(forward_two)
-		# Diagonal capture moves:
+		# Diagonal capture moves (capture any piece)
 		var diag_left = str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)
 		var diag_right = str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)
 		if not Is_Null(diag_left):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
-	else:  # Black pawn
-		# Forward move one step (must be empty)
+				Areas.append(diag_right)
+	else:  # Black pawn moves downward
 		var forward_one = Location_X + "-" + str(int(Location_Y) + 1)
 		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
 			Areas.append(forward_one)
-			# Forward move two steps on first move
 			if Piece.Double_Start:
 				var forward_two = Location_X + "-" + str(int(Location_Y) + 2)
 				if not Is_Null(forward_two) and Flow.get_node(forward_two).get_child_count() == 0:
 					Areas.append(forward_two)
-		# Diagonal capture moves:
 		var diag_left = str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)
 		var diag_right = str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)
 		if not Is_Null(diag_left):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
+				Areas.append(diag_right)
 
 func Get_Around(Piece):
-	var Flow = get_node("Flow")  # ADDED: Declare Flow variable
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
+	var Flow = get_node("Flow")
+	# (We no longer check the color for capture)
 	var positions = [
 		Location_X + "-" + str(int(Location_Y) + 1),
 		Location_X + "-" + str(int(Location_Y) - 1),
@@ -194,18 +179,10 @@ func Get_Around(Piece):
 	]
 	for pos_str in positions:
 		if not Is_Null(pos_str):
-			var target = Flow.get_node(pos_str)
-			if target.get_child_count() == 0:
-				Areas.append(pos_str)
-			else:
-				# CHANGED: Add if the occupying piece is of reversed color.
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(pos_str)
+			# Always add the square—whether empty or occupied
+			Areas.append(pos_str)
 
 func Get_Rows(Flow):
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
-
 	var Add_X = 1
 	# To the right
 	while not Is_Null(str(int(Location_X) + Add_X) + "-" + Location_Y):
@@ -213,10 +190,7 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			# CHANGED: Allow enemy capture then break.
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)  # capture move (no color check)
 			break
 		Add_X += 1
 
@@ -227,9 +201,7 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 
@@ -240,9 +212,7 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_Y += 1
 
@@ -253,14 +223,11 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_Y += 1
 
 func Get_Diagonals(Flow):
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
 	var Add_X = 1
 	var Add_Y = 1
 	# Down-right diagonal
@@ -269,10 +236,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			# CHANGED: Allow enemy capture then break.
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -285,9 +249,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -300,9 +262,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -315,9 +275,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -327,12 +285,11 @@ func Get_Horse():
 	var The_X = 2
 	var The_Y = 1
 	var number = 0
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
+	# (No color check here; capture is allowed regardless)
 	while number != 8:
-		# So this one is interesting. This is most likely the cleanest code here.
-		# Get the numbers, replace the numbers, and loop until it stops.
-		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color):
-			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
+		var target_str = str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)
+		if not Is_Null(target_str):
+			Areas.append(target_str)
 		number += 1
 		match number:
 			1:
@@ -356,8 +313,7 @@ func Get_Horse():
 			7:
 				The_X = -1
 				The_Y = -2
-				
-	print(Areas)
+
 
 func Castle():
 	# This is the castling section right here, used if a person wants to castle.
