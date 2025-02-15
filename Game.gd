@@ -6,6 +6,8 @@ var Turn = 0
 var Location_X = ""
 var Location_Y = ""
 
+var unfuseable = ["King","ElitePawn"]
+
 var pos = Vector2(50, 50)
 var Areas: PackedStringArray
 # Special_Area is used for castling/en passant conditions.
@@ -189,12 +191,21 @@ func Get_Moveable_Areas():
 		Get_Horse()
 	elif Piece.name == "ElitePawn":
 		Get_Elite_Pawn(Piece, Flow)
-	print(Areas)
-		
+
+	
+	var newArea = []
 	for area in Areas:
+		var temp = get_node("Flow/" + area).get_child(0)
+		if temp == null:
+			newArea.append(area)
+		if (temp != null) and (temp.name not in unfuseable):
+			newArea.append(area)
+		if(temp != null) and (temp.name in unfuseable):
+			continue
 		var tile = Flow.get_node(area)
 		if tile is TextureButton:
 			tile.texture_normal = load("res://assets/highlight.png")
+	Areas = newArea
 
 
 # ------------------------------------------------------------------
@@ -268,8 +279,8 @@ func Get_Pawn(Piece, Flow):
 				Areas.append(diag_right)
 
 func Get_Around(Piece):
-	var Flow = get_node("Flow")
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
+	var Flow = get_node("Flow")  # ADDED: Declare Flow variable
+	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
 	var positions = [
 		Location_X + "-" + str(int(Location_Y) + 1),
 		Location_X + "-" + str(int(Location_Y) - 1),
@@ -286,7 +297,10 @@ func Get_Around(Piece):
 			if target.get_child_count() == 0:
 				Areas.append(pos_str)
 			else:
-				Areas.append(pos_str)
+				# CHANGED: Add if the occupying piece is of reversed color.
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(pos_str)
 					
 func Get_Rows(Flow):
 	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
