@@ -27,7 +27,6 @@ func parseLocation(location: String):
 
 func processSelection(location: String):
 	var targetNode = get_node("Flow/" + location)
-
 	# If no piece is selected yet, select a friendly piece.
 	if Selected_Node == "":
 		if targetNode.get_child_count() != 0 and targetNode.get_child(0).Item_Color == Turn:
@@ -38,57 +37,34 @@ func processSelection(location: String):
 	var selectedPiece = get_node("Flow/" + Selected_Node).get_child(0)
 	if targetNode.get_child_count() != 0:
 		var targetPiece = targetNode.get_child(0)
-
 		# Friendly piece on target.
 		if targetPiece.Item_Color == Turn:
-			var selCoords = parseLocationToCoords(Selected_Node)
-			var targetCoords = parseLocationToCoords(location)
-
-			# Check if fusion is allowed
-			if isValidFusion(selCoords, targetCoords, selectedPiece, targetPiece):
-				processFuse(location)
+			if targetPiece.name == "Rook":
+				processCastling(location)
+			# Fusion: only allow if both are pawns and the target lies on a valid diagonal.
+			elif targetPiece.name == "Pawn" and selectedPiece.name == "Pawn":
+				var selCoords = parseLocationToCoords(Selected_Node)
+				var targetCoords = parseLocationToCoords(location)
+				if isValidPawnFusion(selCoords, targetCoords, selectedPiece.Item_Color):
+					processFuse(location)
+				else:
+					reselectPiece(location)
 			else:
 				reselectPiece(location)
-
 		# Enemy piece on target.
 		else:
 			if targetPiece.name == "Pawn" and targetPiece.get("En_Passant") == true and Special_Area.size() != 0 and Special_Area[0] == targetNode.name:
 				processEnPassant(location)
-			else: # if anyone wants to add the checkmate mechanizm than this is a nice place to start 
+			else:
 				processCapture(location)
 	else:
 		# Empty square: attempt a normal move.
 		processMove(location)
 
-
-
 # Helper: Parse a location string ("x-y") into a Vector2 with integer coordinates.
 func parseLocationToCoords(location: String) -> Vector2:
 	var parts = location.split("-")
 	return Vector2(int(parts[0]), int(parts[1]))
-	
-
-func isValidFusion(selCoords: Vector2, targetCoords: Vector2, selectedPiece: Node, targetPiece: Node) -> bool:
-	# Ensure both pieces exist and belong to the same player
-	if not selectedPiece or not targetPiece or selectedPiece.Item_Color != targetPiece.Item_Color:
-		return false
-
-	# Check if fusion is possible using the Fusion_Piece_Map
-	var fusionName = getFusionPieceName(selectedPiece.name, targetPiece.name)
-	if fusionName == "":
-		return false  # No valid fusion exists
-
-	# Special movement rules for pawns
-	if selectedPiece.name == "Pawn" :
-		var piece_color = selectedPiece.Item_Color
-		if piece_color == 0:
-			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y - 1)
-		else:
-			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y + 1)
-
-	# If no special movement rules apply, allow fusion
-	return true
-	
 
 # Helper: For a pawn, fusion (friendly capture) is allowed only if the target is on the correct diagonal.
 func isValidPawnFusion(selCoords: Vector2, targetCoords: Vector2, piece_color: int) -> bool:
@@ -108,18 +84,17 @@ func reselectPiece(location: String):
 	Get_Moveable_Areas()
 
 func processCastling(location: String):
-	pass
-	#var targetNode = get_node("Flow/" + location)
-	#for i in Areas:
-		#if i == targetNode.name:
-			#var king = get_node("Flow/" + Selected_Node).get_child(0)
-			#var rook = targetNode.get_child(0)
-			#king.reparent(get_node("Flow/" + Special_Area[1]))
-			#rook.reparent(get_node("Flow/" + Special_Area[0]))
-			#king.position = pos
-			#rook.position = pos
-			#Update_Game(king.get_parent())
-			#return
+	var targetNode = get_node("Flow/" + location)
+	for i in Areas:
+		if i == targetNode.name:
+			var king = get_node("Flow/" + Selected_Node).get_child(0)
+			var rook = targetNode.get_child(0)
+			king.reparent(get_node("Flow/" + Special_Area[1]))
+			rook.reparent(get_node("Flow/" + Special_Area[0]))
+			king.position = pos
+			rook.position = pos
+			Update_Game(king.get_parent())
+			return
 
 func processEnPassant(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -132,84 +107,20 @@ func processEnPassant(location: String):
 			Update_Game(pawn.get_parent())
 			return
 
-var Fusion_Piece_Map = {  
-	# Pawn fusions  
-	["Pawn", "Pawn"]: "ElitePawn",  
-
-	# Knight fusions  
-	["Pawn", "Knight"]: "GuardedKnight",  
-	["Knight", "Knight"]: "Cavalier",  
-
-	# Bishop fusions  
-	["Pawn", "Bishop"]: "GuardedBishop",  
-	["Knight", "Bishop"]: "Crusader",  
-	["Bishop", "Bishop"]: "Pope",  
-
-	# Rook fusions  
-	["Pawn", "Rook"]: "GuardedRook",  
-	["Knight", "Rook"]: "SiegeCamp",  
-	["Bishop", "Rook"]: "Cathedral",  
-	["Rook", "Rook"]: "Fortress",  
-
-	# Queen fusions  
-	["Pawn", "Queen"]: "GuardedQueen",  
-	["Knight", "Queen"]: "Valkyre",  
-	["Bishop", "Queen"]: "Archqueen",  
-	["Rook", "Queen"]: "FortressQueen",  
-	["Queen", "Queen"]: "Empress"  
-}
-
 func processFuse(location: String):
 	var targetNode = get_node("Flow/" + location)
-	var capturingPiece = get_node("Flow/" + Selected_Node).get_child(0)
-	var targetPiece = targetNode.get_child(0)
-
-	# Ensure both pieces exist and are of the same color.
-	if not capturingPiece or not targetPiece or capturingPiece.Item_Color != targetPiece.Item_Color:
-		return
+	var capturingPawn = get_node("Flow/" + Selected_Node).get_child(0)
+	# Remove the target friendly pawn.
+	targetNode.get_child(0).free()
 	
-	# Get fusion name
-	var fusionPiece = getFusionPieceName(capturingPiece.name, targetPiece.name)
-	if fusionPiece == "":
-		print("Error: No valid fusion for " + capturingPiece.name + " + " + targetPiece.name)
-		return
-	
-	# Load the fusion piece script dynamically
-	var fused_script_path = "res://addons/Chess/Scripts/" + fusionPiece + ".gd"
-	var fused_script = load(fused_script_path)
-
-
-	if not fused_script:
-		print("Error: Could not load fusion piece script at " + fused_script_path)
-		return
-	
-	# Create the new fused piece
-	var FusedPiece = fused_script.new()
-	FusedPiece.name = fusionPiece
-	FusedPiece.set("Item_Color", capturingPiece.get("Item_Color"))
-	FusedPiece.position = targetNode.position
-	
-	# Remove old pieces
-	capturingPiece.queue_free()
-	targetPiece.queue_free()
-
-	targetNode.add_child(FusedPiece)
-	
-	FusedPiece.global_position = targetNode.global_position + Vector2(50,50)
-	
+	var elitePawn = preload("res://addons/Chess/Scripts/ElitePawn.gd").new()
+	elitePawn.name = "ElitePawn"   # Ensure its name is set
+	# Option 2: Alternatively, you can use set()/get() if the property isn't directly accessible:
+	elitePawn.set("Item_Color", capturingPawn.get("Item_Color"))
+	elitePawn.position = pos
+	capturingPawn.queue_free()
+	targetNode.add_child(elitePawn)
 	Update_Game(targetNode)
-
-func getFusionPieceName(piece1: String, piece2: String) -> String:
-	var key1 = [piece1, piece2]
-	var key2 = [piece2, piece1]  # Check both orders
-	
-	if key1 in Fusion_Piece_Map:
-		return Fusion_Piece_Map[key1]
-	if key2 in Fusion_Piece_Map:
-		return Fusion_Piece_Map[key2]
-	
-	return ""  # No valid fusion found
-
 
 func processCapture(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -217,20 +128,12 @@ func processCapture(location: String):
 		if i == targetNode.name:
 			var piece = get_node("Flow/" + Selected_Node).get_child(0)
 			if targetNode.get_child(0).name == "King":
-				var color
-				if(1 == targetNode.get_child(0).Item_Color):
-					color = "white"
-				else: 
-					color = "black"
-				print(color  + " wins")
-				get_tree().change_scene_to_file("res://endgame.tscn")
-				
+				print("Damn, you win!")
 			targetNode.get_child(0).free()
 			piece.reparent(targetNode)
 			piece.position = pos
 			Update_Game(targetNode)
 			return
-
 
 func processMove(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -245,7 +148,6 @@ func processMove(location: String):
 func Update_Game(node):
 	Selected_Node = ""
 	Turn = 1 - Turn
-	Reset_Tile_Colors()
 	
 	# Reset en passant flags on enemy pawns.
 	var things = get_node("Flow").get_children()
@@ -264,41 +166,30 @@ func Update_Game(node):
 		node.get_child(0).Castling = false
 
 func Get_Moveable_Areas():
-	
 	var Flow = get_node("Flow")
 	Areas.clear()
 	Special_Area.clear()
-	Reset_Tile_Colors()
 	var Piece = get_node("Flow/" + Selected_Node).get_child(0)
 	if Piece.name == "Pawn":
 		Get_Pawn(Piece, Flow)
 	elif Piece.name == "Bishop":
-		Get_Diagonals(Flow)
+		Get_Bishop(Piece, Flow)
 	elif Piece.name == "King":
 		Get_Around(Piece)
 	elif Piece.name == "Queen":
-		Get_Diagonals(Flow)
-		Get_Rows(Flow)
+		Get_Bishop(Piece, Flow)
+		Get_Rook(Piece, Flow)
 	elif Piece.name == "Rook":
-		Get_Rows(Flow)
+		Get_Rook(Piece, Flow)
 	elif Piece.name == "Knight":
-		Get_Horse()
+		Get_Horse(Piece, Flow)
 	elif Piece.name == "ElitePawn":
 		Get_Elite_Pawn(Piece, Flow)
-	elif Piece.name == "GuardedKnight":
-		Get_Guarded_Knight(Piece, Flow)
 	print(Areas)
-		
-	for area in Areas:
-		var tile = Flow.get_node(area)
-		if tile is TextureButton:
-			tile.texture_normal = load("res://assets/highlight.png")
-
 
 # ------------------------------------------------------------------
 # (The following movement functions remain similar to your original code.)
 # ------------------------------------------------------------------
-
 
 func Get_Pawn(Piece, Flow):
 	var piece_color = Piece.Item_Color
@@ -315,11 +206,15 @@ func Get_Pawn(Piece, Flow):
 		if not Is_Null(diag_left):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
-				Areas.append(diag_left)
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
-				Areas.append(diag_right)
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_right)
 	else:  # Black pawn
 		var forward_one = Location_X + "-" + str(int(Location_Y) + 1)
 		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
@@ -333,11 +228,15 @@ func Get_Pawn(Piece, Flow):
 		if not Is_Null(diag_left):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
-				Areas.append(diag_left)
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
-				Areas.append(diag_right)
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_right)
 
 func Get_Around(Piece):
 	var Flow = get_node("Flow")
@@ -358,102 +257,66 @@ func Get_Around(Piece):
 			if target.get_child_count() == 0:
 				Areas.append(pos_str)
 			else:
-				Areas.append(pos_str)
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(pos_str)
 					
-func Get_Rows(Flow):
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
-	var Add_X = 1
-	while not Is_Null(str(int(Location_X) + Add_X) + "-" + Location_Y):
-		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + Location_Y)
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_X += 1
-	Add_X = 1
-	while not Is_Null(str(int(Location_X) - Add_X) + "-" + Location_Y):
-		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + Location_Y)
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_X += 1
-	var Add_Y = 1
-	while not Is_Null(Location_X + "-" + str(int(Location_Y) + Add_Y)):
-		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) + Add_Y))
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_Y += 1
-	Add_Y = 1
-	while not Is_Null(Location_X + "-" + str(int(Location_Y) - Add_Y)):
-		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) - Add_Y))
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_Y += 1
+func Get_Rook(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	var ortho_offsets = [
+		Vector2( 0, -1),  # up
+		Vector2( 0,  1),  # down
+		Vector2(-1,  0),  # left
+		Vector2( 1,  0)   # right
+	]
+	for offset in ortho_offsets:
+		for d in range(1, 4):  # d = 1, 2, 3
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break
 
-func Get_Diagonals(Flow):
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
-	var Add_X = 1
-	var Add_Y = 1
-	while not Is_Null(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y)):
-		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y))
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_X += 1
-		Add_Y += 1
-	Add_X = 1
-	Add_Y = 1
-	while not Is_Null(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y)):
-		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y))
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_X += 1
-		Add_Y += 1
-	Add_X = 1
-	Add_Y = 1
-	while not Is_Null(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y)):
-		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y))
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_X += 1
-		Add_Y += 1
-	Add_X = 1
-	Add_Y = 1
-	while not Is_Null(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y)):
-		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y))
-		if target.get_child_count() == 0:
-			Areas.append(target.name)
-		else:
-			Areas.append(target.name)
-			break
-		Add_X += 1
-		Add_Y += 1
+func Get_Bishop(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	var diagOffsets = [
+		Vector2(-1, -1),  # Up-left
+		Vector2(1, -1),   # Up-right
+		Vector2(-1, 1),   # Bottom-left
+		Vector2(1, 1)     # Bottom-right
+	]
+	for offset in diagOffsets:
+		# Start from distance 2 (since one-unit diagonal moves are not allowed)
+		for d in range(1, 4):  # d = 1, 2 and 3
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			# If candidate is off-board, break out.
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+			else:
+				# If an opponent's piece is present, capture is allowed, but no further sliding.
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break  # Stop sliding in this direction if any piece is encountered.
+	
 
-func Get_Horse():
-	var Flow = get_node("Flow")
+func Get_Horse(Piece, Flow):
 	var The_X = 2
 	var The_Y = 1
 	var number = 0
-	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
+	var piece_color = Piece.Item_Color
 	while number != 8:
-		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)):
+		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color):
 			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
 		number += 1
 		match number:
@@ -478,8 +341,6 @@ func Get_Horse():
 			7:
 				The_X = -1
 				The_Y = -2
-
-
 
 func Get_Elite_Pawn(Piece, Flow):
 	var piece_color = Piece.Item_Color
@@ -549,10 +410,10 @@ func Get_Cavalier(Piece, Flow):
 				Areas.append(candidate)
 
 func Get_Guarded_Bishop(Piece, Flow):
-    # Get the bishop's color (assumed to be in the currently selected node).
+	# Get the bishop's color (assumed to be in the currently selected node).
 	var piece_color = Piece.Item_Color
 
-    # --- 1. One-unit orthogonal moves only (no diagonals) ---
+	# --- 1. One-unit orthogonal moves only (no diagonals) ---
 	var oneUnitOffsets = [
 		Vector2(0, -1),  # Up
 		Vector2(-1, 0),  # Left
@@ -565,11 +426,11 @@ func Get_Guarded_Bishop(Piece, Flow):
 		var candidate = str(candidateX) + "-" + str(candidateY)
 		if not Is_Null(candidate):
 			var candidateNode = Flow.get_node(candidate)
-            # Add the candidate if the square is empty or has an opponent's piece.
+			# Add the candidate if the square is empty or has an opponent's piece.
 			if candidateNode.get_child_count() == 0 or candidateNode.get_child(0).Item_Color != piece_color:
 				Areas.append(candidate)
 
-    # --- 2. Diagonal sliding moves (minimum 1 units, maximum 3 units) ---
+	# --- 2. Diagonal sliding moves (minimum 1 units, maximum 3 units) ---
 	var diagOffsets = [
 		Vector2(-1, -1),  # Up-left
 		Vector2(1, -1),   # Up-right
@@ -577,26 +438,26 @@ func Get_Guarded_Bishop(Piece, Flow):
 		Vector2(1, 1)     # Bottom-right
 	]
 	for offset in diagOffsets:
-        # Start from distance 2 (since one-unit diagonal moves are not allowed)
+		# Start from distance 2 (since one-unit diagonal moves are not allowed)
 		for d in range(1, 4):  # d = 1, 2 and 3
 			var candidateX = int(Location_X) + int(offset.x) * d
 			var candidateY = int(Location_Y) + int(offset.y) * d
 			var candidate = str(candidateX) + "-" + str(candidateY)
-            # If candidate is off-board, break out.
+			# If candidate is off-board, break out.
 			if Is_Null(candidate):
 				break
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
 			else:
-                # If an opponent's piece is present, capture is allowed, but no further sliding.
+				# If an opponent's piece is present, capture is allowed, but no further sliding.
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break  # Stop sliding in this direction if any piece is encountered.
 
 func Get_Crusader(Piece, Flow):
 	var piece_color = Piece.Item_Color
-    # Base offsets in one quadrant (e.g. first quadrant where x > 0, y > 0)
+	# Base offsets in one quadrant (e.g. first quadrant where x > 0, y > 0)
 	var baseOffsets = [
 		Vector2(1, 1),
 		Vector2(1, 2),
@@ -606,21 +467,21 @@ func Get_Crusader(Piece, Flow):
 		Vector2(3, 2),
 		Vector2(3, 3)
 	]
-    
-    # Generate all mirror images (over vertical and horizontal axes)
+	
+	# Generate all mirror images (over vertical and horizontal axes)
 	var offsets = []
 	for offset in baseOffsets:
 		offsets.append(offset)
 		offsets.append(Vector2(-offset.x, offset.y))
 		offsets.append(Vector2(offset.x, -offset.y))
 		offsets.append(Vector2(-offset.x, -offset.y))
-    
-    # Loop over each offset and check candidate square.
+	
+	# Loop over each offset and check candidate square.
 	for offset in offsets:
 		var candidateX = int(Location_X) + int(offset.x)
 		var candidateY = int(Location_Y) + int(offset.y)
 		var candidate = str(candidateX) + "-" + str(candidateY)
-        # Only add if the candidate square exists and is either empty or occupied by an opponent.
+		# Only add if the candidate square exists and is either empty or occupied by an opponent.
 		if not Is_Null(candidate):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0 or candidateNode.get_child(0).Item_Color != piece_color:
@@ -696,10 +557,10 @@ func Get_Guarded_Rook(Piece, Flow):
 		var candidate = str(candidateX) + "-" + str(candidateY)
 		if not Is_Null(candidate):
 			var candidateNode = Flow.get_node(candidate)
-            # Allow move if square is empty or contains an opponent piece.
+			# Allow move if square is empty or contains an opponent piece.
 			if candidateNode.get_child_count() == 0 or candidateNode.get_child(0).Item_Color != piece_color:
 				Areas.append(candidate)
-    
+	
 	var ortho_offsets = [
 		Vector2( 0, -1),  # up
 		Vector2( 0,  1),  # down
@@ -733,7 +594,7 @@ func Get_Siege_Camp(Piece, Flow):
 		offsets.append(Vector2(-base.x, base.y))
 		offsets.append(Vector2(base.x, -base.y))
 		offsets.append(Vector2(-base.x, -base.y))
-    
+	
 	for offset in offsets:
 		var candidateX = int(Location_X) + int(offset.x)
 		var candidateY = int(Location_Y) + int(offset.y)
@@ -775,19 +636,19 @@ func Get_Cathedral(Piece, Flow):
 	]
 	
 	for offset in diagOffsets:
-        # Start from distance 2 (since one-unit diagonal moves are not allowed)
+		# Start from distance 2 (since one-unit diagonal moves are not allowed)
 		for d in range(1, 3):  # d = 1, 2 and 3
 			var candidateX = int(Location_X) + int(offset.x) * d
 			var candidateY = int(Location_Y) + int(offset.y) * d
 			var candidate = str(candidateX) + "-" + str(candidateY)
-            # If candidate is off-board, break out.
+			# If candidate is off-board, break out.
 			if Is_Null(candidate):
 				break
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
 			else:
-                # If an opponent's piece is present, capture is allowed, but no further sliding.
+				# If an opponent's piece is present, capture is allowed, but no further sliding.
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break  # Stop sliding in this direction if any piece is encountered.
@@ -812,37 +673,349 @@ func Get_Cathedral(Piece, Flow):
 					Areas.append(candidate)
 				break
 
+func Get_Fortress(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	var Add_X = 1
+	while not Is_Null(str(int(Location_X) + Add_X) + "-" + Location_Y):
+		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + Location_Y)
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+	Add_X = 1
+	while not Is_Null(str(int(Location_X) - Add_X) + "-" + Location_Y):
+		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + Location_Y)
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+	var Add_Y = 1
+	while not Is_Null(Location_X + "-" + str(int(Location_Y) + Add_Y)):
+		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) + Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_Y += 1
+	Add_Y = 1
+	while not Is_Null(Location_X + "-" + str(int(Location_Y) - Add_Y)):
+		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) - Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_Y += 1
+
+func Get_Guarded_Queen(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	
+	var diagOffsets = [
+		Vector2(-1, -1),  # Up-left
+		Vector2(1, -1),   # Up-right
+		Vector2(-1, 1),   # Bottom-left
+		Vector2(1, 1)     # Bottom-right
+	]
+	
+	for offset in diagOffsets:
+		# Start from distance 2 (since one-unit diagonal moves are not allowed)
+		for d in range(1, 4):  # d = 1, 2 and 3
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			# If candidate is off-board, break out.
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+			else:
+				# If an opponent's piece is present, capture is allowed, but no further sliding.
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break  # Stop sliding in this direction if any piece is encountered.
+
+	var ortho_offsets = [
+		Vector2( 0, -1),  # up
+		Vector2( 0,  1),  # down
+		Vector2(-1,  0),  # left
+		Vector2( 1,  0)   # right
+	]
+	for offset in ortho_offsets:
+		for d in range(1, 5):  # d = 1, 2, 3, 4
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break
+				
+func Get_Valkyre(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	
+	var diagOffsets = [
+		Vector2(-1, -1),  # Up-left
+		Vector2(1, -1),   # Up-right
+		Vector2(-1, 1),   # Bottom-left
+		Vector2(1, 1)     # Bottom-right
+	]
+	
+	for offset in diagOffsets:
+		# Start from distance 2 (since one-unit diagonal moves are not allowed)
+		for d in range(1, 4):  # d = 1, 2 and 3
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			# If candidate is off-board, break out.
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+			else:
+				# If an opponent's piece is present, capture is allowed, but no further sliding.
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break  # Stop sliding in this direction if any piece is encountered.
+
+	var ortho_offsets = [
+		Vector2( 0, -1),  # up
+		Vector2( 0,  1),  # down
+		Vector2(-1,  0),  # left
+		Vector2( 1,  0)   # right
+	]
+	for offset in ortho_offsets:
+		for d in range(1, 4):  # d = 1, 2, 3
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break
+
+	var The_X = 2
+	var The_Y = 1
+	var number = 0
+	while number != 8:
+		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color):
+			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
+		number += 1
+		match number:
+			1:
+				The_X = 1
+				The_Y = 2
+			2:
+				The_X = -2
+				The_Y = 1
+			3:
+				The_X = -1
+				The_Y = 2
+			4:
+				The_X = 2
+				The_Y = -1
+			5:
+				The_X = 1
+				The_Y = -2
+			6:
+				The_X = -2
+				The_Y = -1
+			7:
+				The_X = -1
+				The_Y = -2
+
+func Get_Archqueen(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	
+	var ortho_offsets = [
+		Vector2( 0, -1),  # up
+		Vector2( 0,  1),  # down
+		Vector2(-1,  0),  # left
+		Vector2( 1,  0)   # right
+	]
+	for offset in ortho_offsets:
+		for d in range(1, 4):  # d = 1, 2, 3
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break
+	
+	var Add_X = 1
+	var Add_Y = 1
+	while not Is_Null(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y)):
+		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+		Add_Y += 1
+	Add_X = 1
+	Add_Y = 1
+	while not Is_Null(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y)):
+		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+		Add_Y += 1
+	Add_X = 1
+	Add_Y = 1
+	while not Is_Null(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y)):
+		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+		Add_Y += 1
+	Add_X = 1
+	Add_Y = 1
+	while not Is_Null(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y)):
+		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+		Add_Y += 1
+		
+func Get_Fortress_Queen(Piece, Flow):
+	var piece_color = Piece.Item_Color
+	var Add_X = 1
+	while not Is_Null(str(int(Location_X) + Add_X) + "-" + Location_Y):
+		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + Location_Y)
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+	Add_X = 1
+	while not Is_Null(str(int(Location_X) - Add_X) + "-" + Location_Y):
+		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + Location_Y)
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_X += 1
+	var Add_Y = 1
+	while not Is_Null(Location_X + "-" + str(int(Location_Y) + Add_Y)):
+		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) + Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_Y += 1
+	Add_Y = 1
+	while not Is_Null(Location_X + "-" + str(int(Location_Y) - Add_Y)):
+		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) - Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
+			break
+		Add_Y += 1
+		
+	var diagOffsets = [
+		Vector2(-1, -1),  # Up-left
+		Vector2(1, -1),   # Up-right
+		Vector2(-1, 1),   # Bottom-left
+		Vector2(1, 1)     # Bottom-right
+	]
+	
+	for offset in diagOffsets:
+		# Start from distance 2 (since one-unit diagonal moves are not allowed)
+		for d in range(1, 4):  # d = 1, 2 and 3
+			var candidateX = int(Location_X) + int(offset.x) * d
+			var candidateY = int(Location_Y) + int(offset.y) * d
+			var candidate = str(candidateX) + "-" + str(candidateY)
+			# If candidate is off-board, break out.
+			if Is_Null(candidate):
+				break
+			var candidateNode = Flow.get_node(candidate)
+			if candidateNode.get_child_count() == 0:
+				Areas.append(candidate)
+			else:
+				# If an opponent's piece is present, capture is allowed, but no further sliding.
+				if candidateNode.get_child(0).Item_Color != piece_color:
+					Areas.append(candidate)
+				break  # Stop sliding in this direction if any piece is encountered.
+
+
 func Castle():
-	pass
-	#var Flow = get_node("Flow")
-	#var X_Counter = 1
-	#while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
-		#X_Counter += 1
-	#if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
-		#if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
-			#Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
-			#Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
-			#Special_Area.append(str(int(Location_X) + 2) + "-" + Location_Y)
-	#X_Counter = -1
-	#while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
-		#X_Counter -= 1
-	#if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
-		#if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
-			#Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
-			#Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
-			#Special_Area.append(str(int(Location_X) - 2) + "-" + Location_Y)
+	var Flow = get_node("Flow")
+	var X_Counter = 1
+	while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
+		X_Counter += 1
+	if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
+		if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
+			Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
+			Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
+			Special_Area.append(str(int(Location_X) + 2) + "-" + Location_Y)
+	X_Counter = -1
+	while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
+		X_Counter -= 1
+	if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
+		if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
+			Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
+			Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
+			Special_Area.append(str(int(Location_X) - 2) + "-" + Location_Y)
 
 func Is_Null(Location):
 	if get_node_or_null("Flow/" + Location) == null:
 		return true
 	else:
 		return false
-
-func Reset_Tile_Colors():
-	var Flow = get_node("Flow")
-	for y in range(8):
-		for x in range(8):
-			var tile = Flow.get_node(str(x) + "-" + str(y))
-			if tile is TextureButton:
-				var is_white = (x + y) % 2 == 0
-				tile.texture_normal = load("res://assets/white_board.png") if is_white else load("res://assets/black_board.png")

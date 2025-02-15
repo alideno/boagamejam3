@@ -108,9 +108,6 @@ func Summon(Piece_Name: String, color: int):
 		"ElitePawn":
 			Piece = ElitePawn.new()
 			Piece.name = "ElitePawn"
-		"GuardedKnight":
-			Piece = GuardedKnight.new()
-			Piece.name = "GuardedKnight"
 	Piece.Item_Color = color
 	Piece.position = Vector2(Tile_X_Size / 2, Tile_Y_Size / 2)
 	return Piece
