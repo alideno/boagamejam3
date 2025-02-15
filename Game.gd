@@ -39,10 +39,10 @@ func processSelection(location: String):
 		var targetPiece = targetNode.get_child(0)
 		# Friendly piece on target.
 		if targetPiece.Item_Color == Turn:
-			if targetPiece.name == "Rook":
-				processCastling(location)
+			#if targetPiece.name == "Rook":
+				#processCastling(location)
 			# Fusion: only allow if both are pawns and the target lies on a valid diagonal.
-			elif targetPiece.name == "Pawn" and selectedPiece.name == "Pawn":
+			if targetPiece.name == "Pawn" and selectedPiece.name == "Pawn":
 				var selCoords = parseLocationToCoords(Selected_Node)
 				var targetCoords = parseLocationToCoords(location)
 				if isValidPawnFusion(selCoords, targetCoords, selectedPiece.Item_Color):
@@ -84,17 +84,18 @@ func reselectPiece(location: String):
 	Get_Moveable_Areas()
 
 func processCastling(location: String):
-	var targetNode = get_node("Flow/" + location)
-	for i in Areas:
-		if i == targetNode.name:
-			var king = get_node("Flow/" + Selected_Node).get_child(0)
-			var rook = targetNode.get_child(0)
-			king.reparent(get_node("Flow/" + Special_Area[1]))
-			rook.reparent(get_node("Flow/" + Special_Area[0]))
-			king.position = pos
-			rook.position = pos
-			Update_Game(king.get_parent())
-			return
+	pass
+	#var targetNode = get_node("Flow/" + location)
+	#for i in Areas:
+		#if i == targetNode.name:
+			#var king = get_node("Flow/" + Selected_Node).get_child(0)
+			#var rook = targetNode.get_child(0)
+			#king.reparent(get_node("Flow/" + Special_Area[1]))
+			#rook.reparent(get_node("Flow/" + Special_Area[0]))
+			#king.position = pos
+			#rook.position = pos
+			#Update_Game(king.get_parent())
+			#return
 
 func processEnPassant(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -149,6 +150,7 @@ func processMove(location: String):
 func Update_Game(node):
 	Selected_Node = ""
 	Turn = 1 - Turn
+	Reset_Tile_Colors()
 	
 	# Reset en passant flags on enemy pawns.
 	var things = get_node("Flow").get_children()
@@ -170,6 +172,7 @@ func Get_Moveable_Areas():
 	var Flow = get_node("Flow")
 	Areas.clear()
 	Special_Area.clear()
+	Reset_Tile_Colors()
 	var Piece = get_node("Flow/" + Selected_Node).get_child(0)
 	if Piece.name == "Pawn":
 		Get_Pawn(Piece, Flow)
@@ -184,7 +187,11 @@ func Get_Moveable_Areas():
 		Get_Rows(Flow)
 	elif Piece.name == "Knight":
 		Get_Horse()
-	print(Areas)
+		
+	for area in Areas:
+		var tile = Flow.get_node(area)
+		if tile is TextureButton:
+			tile.texture_normal = load("res://assets/highlight.png")
 
 # ------------------------------------------------------------------
 # (The following movement functions remain similar to your original code.)
@@ -205,15 +212,11 @@ func Get_Pawn(Piece, Flow):
 		if not Is_Null(diag_left):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
+				Areas.append(diag_right)
 	else:  # Black pawn
 		var forward_one = Location_X + "-" + str(int(Location_Y) + 1)
 		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
@@ -227,15 +230,11 @@ func Get_Pawn(Piece, Flow):
 		if not Is_Null(diag_left):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
+				Areas.append(diag_right)
 
 func Get_Around(Piece):
 	var Flow = get_node("Flow")
@@ -256,9 +255,7 @@ func Get_Around(Piece):
 			if target.get_child_count() == 0:
 				Areas.append(pos_str)
 			else:
-				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(pos_str)
+				Areas.append(pos_str)
 					
 func Get_Rows(Flow):
 	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
@@ -268,9 +265,7 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 	Add_X = 1
@@ -279,9 +274,7 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 	var Add_Y = 1
@@ -290,9 +283,7 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_Y += 1
 	Add_Y = 1
@@ -301,9 +292,7 @@ func Get_Rows(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_Y += 1
 
@@ -316,9 +305,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -329,9 +316,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -342,9 +327,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -355,9 +338,7 @@ func Get_Diagonals(Flow):
 		if target.get_child_count() == 0:
 			Areas.append(target.name)
 		else:
-			var occupant = target.get_child(0)
-			if occupant.Item_Color != piece_color:
-				Areas.append(target.name)
+			Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
@@ -369,7 +350,7 @@ func Get_Horse():
 	var number = 0
 	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
 	while number != 8:
-		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color):
+		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)):
 			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
 		number += 1
 		match number:
@@ -395,29 +376,38 @@ func Get_Horse():
 				The_X = -1
 				The_Y = -2
 				
-	print(Areas)
 
 func Castle():
-	var Flow = get_node("Flow")
-	var X_Counter = 1
-	while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
-		X_Counter += 1
-	if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
-		if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
-			Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) + 2) + "-" + Location_Y)
-	X_Counter = -1
-	while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
-		X_Counter -= 1
-	if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
-		if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
-			Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) - 2) + "-" + Location_Y)
+	pass
+	#var Flow = get_node("Flow")
+	#var X_Counter = 1
+	#while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
+		#X_Counter += 1
+	#if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
+		#if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
+			#Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) + 2) + "-" + Location_Y)
+	#X_Counter = -1
+	#while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
+		#X_Counter -= 1
+	#if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
+		#if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
+			#Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) - 2) + "-" + Location_Y)
 
 func Is_Null(Location):
 	if get_node_or_null("Flow/" + Location) == null:
 		return true
 	else:
 		return false
+
+func Reset_Tile_Colors():
+	var Flow = get_node("Flow")
+	for y in range(8):
+		for x in range(8):
+			var tile = Flow.get_node(str(x) + "-" + str(y))
+			if tile is TextureButton:
+				var is_white = (x + y) % 2 == 0
+				tile.texture_normal = load("res://assets/white_board.png") if is_white else load("res://assets/black_board.png")
