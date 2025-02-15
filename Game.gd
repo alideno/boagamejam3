@@ -60,6 +60,8 @@ func _on_flow_send_location(location: String):
 				# Win conditions
 				if node.get_child(0).name == "King":
 					print("Damn, you win!")
+					get_tree().change_scene_to_file("res://endgame.tscn")
+					print("wtf")
 				node.get_child(0).free()
 				Piece.reparent(node)
 				Piece.position = pos
@@ -102,6 +104,7 @@ func Update_Game(node):
 func Get_Moveable_Areas():
 	Reset_Tile_Colors()
 	var Flow = get_node("Flow")
+	var highlight
 	# Clearing the arrays
 	Areas.clear()
 	Special_Area.clear()
