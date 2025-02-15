@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfk751s2xwsn3"
-path="res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex"
+uid="uid://bal1cx2x7hk7l"
+path="res://.godot/imported/WBishop.svg-8d8d69e7026e6a8ebafe899e6c3db44a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icon.svg"
-dest_files=["res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex"]
+source_file="res://addons/Chess/Textures/WBishop.svg"
+dest_files=["res://.godot/imported/WBishop.svg-8d8d69e7026e6a8ebafe899e6c3db44a.ctex"]
 
 [params]
 

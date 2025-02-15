@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfk751s2xwsn3"
-path="res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex"
+uid="uid://bjneg3fh7mu2e"
+path="res://.godot/imported/BKnight.svg-7f401d8bdc16da86b2c2004013a9bd52.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icon.svg"
-dest_files=["res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex"]
+source_file="res://addons/Chess/Textures/BKnight.svg"
+dest_files=["res://.godot/imported/BKnight.svg-7f401d8bdc16da86b2c2004013a9bd52.ctex"]
 
 [params]
 

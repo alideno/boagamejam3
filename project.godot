@@ -10,6 +10,19 @@ config_version=5
 
 [application]
 
-config/name="boagamejam3"
+config/name="Godot Chess"
+run/main_scene="res://board.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/Chess/plugin.cfg")
+
+[filesystem]
+
+import/blender/enabled=false
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
