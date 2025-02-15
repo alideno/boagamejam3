@@ -27,29 +27,32 @@ func parseLocation(location: String):
 
 func processSelection(location: String):
 	var targetNode = get_node("Flow/" + location)
-	# If no piece is selected yet, and the target square has a friendly piece, select it.
+	# If no piece is selected yet, select a friendly piece.
 	if Selected_Node == "":
 		if targetNode.get_child_count() != 0 and targetNode.get_child(0).Item_Color == Turn:
 			selectPiece(location)
 		return
-	
+
 	# A piece is already selected.
 	var selectedPiece = get_node("Flow/" + Selected_Node).get_child(0)
 	if targetNode.get_child_count() != 0:
 		var targetPiece = targetNode.get_child(0)
 		# Friendly piece on target.
 		if targetPiece.Item_Color == Turn:
-			# Try castling if the target is a Rook.
 			if targetPiece.name == "Rook":
 				processCastling(location)
-			# If both pieces are Pawns, perform the fusion (friendly capture) rule.
+			# Fusion: only allow if both are pawns and the target lies on a valid diagonal.
 			elif targetPiece.name == "Pawn" and selectedPiece.name == "Pawn":
-				processFuse(location)
+				var selCoords = parseLocationToCoords(Selected_Node)
+				var targetCoords = parseLocationToCoords(location)
+				if isValidPawnFusion(selCoords, targetCoords, selectedPiece.Item_Color):
+					processFuse(location)
+				else:
+					reselectPiece(location)
 			else:
 				reselectPiece(location)
 		# Enemy piece on target.
 		else:
-			# Check for en passant conditions.
 			if targetPiece.name == "Pawn" and targetPiece.get("En_Passant") == true and Special_Area.size() != 0 and Special_Area[0] == targetNode.name:
 				processEnPassant(location)
 			else:
@@ -57,6 +60,20 @@ func processSelection(location: String):
 	else:
 		# Empty square: attempt a normal move.
 		processMove(location)
+
+# Helper: Parse a location string ("x-y") into a Vector2 with integer coordinates.
+func parseLocationToCoords(location: String) -> Vector2:
+	var parts = location.split("-")
+	return Vector2(int(parts[0]), int(parts[1]))
+
+# Helper: For a pawn, fusion (friendly capture) is allowed only if the target is on the correct diagonal.
+func isValidPawnFusion(selCoords: Vector2, targetCoords: Vector2, piece_color: int) -> bool:
+	# For white (color 0), a pawn can capture diagonally to (sel.x ± 1, sel.y - 1).
+	# For black (color 1), a pawn can capture diagonally to (sel.x ± 1, sel.y + 1).
+	if piece_color == 0:
+		return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y - 1)
+	else:
+		return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y + 1)
 
 func selectPiece(location: String):
 	Selected_Node = location
