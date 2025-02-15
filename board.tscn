@@ -14,4 +14,13 @@ script = ExtResource("1_f1l42")
 layout_mode = 0
 script = ExtResource("1_ckrtr")
 
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 807.0
+offset_top = 375.0
+offset_right = 1107.0
+offset_bottom = 407.0
+scale = Vector2(2, 2)
+text = "White's Turn!"
+
 [connection signal="send_location" from="Flow" to="." method="_on_flow_send_location"]
