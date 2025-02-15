@@ -77,8 +77,10 @@ func Update_Game(node):
 	Selected_Node = ""
 	if Turn == 0:
 		Turn = 1
+		$Label.text = "Black's Turn!"
 	else:
 		Turn = 0
+		$Label.text = "White's Turn!"
 	
 	# get the en-passantable pieces and undo them
 	var things = get_node("Flow").get_children()
