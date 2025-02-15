@@ -198,9 +198,9 @@ func Get_Moveable_Areas():
 		var temp = get_node("Flow/" + area).get_child(0)
 		if temp == null:
 			newArea.append(area)
-		if (temp != null) and (temp.name not in unfuseable):
+		if (temp != null) and ((temp.name not in unfuseable) or (Piece.Item_Color != temp.Item_Color)):
 			newArea.append(area)
-		if(temp != null) and (temp.name in unfuseable):
+		if(temp != null) and (temp.name in unfuseable) and (Piece.Item_Color == temp.Item_Color):
 			continue
 		var tile = Flow.get_node(area)
 		if tile is TextureButton:
