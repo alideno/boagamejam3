@@ -11,6 +11,8 @@ var Areas: PackedStringArray
 # Special_Area is used for castling/en passant conditions.
 var Special_Area: PackedStringArray
 
+var set = ["Pawn", "Knight", "Bishop", "Rook", "Queen"]
+
 func _on_flow_send_location(location: String):
 	# Parse the location string (e.g. "3-4") into coordinates.
 	parseLocation(location)
@@ -67,6 +69,9 @@ func parseLocationToCoords(location: String) -> Vector2:
 	var parts = location.split("-")
 	return Vector2(int(parts[0]), int(parts[1]))
 	
+func vector_to_string(vec: Vector2) -> String:
+	return str(vec.x) + "-" + str(vec.y)
+	
 
 func isValidFusion(selCoords: Vector2, targetCoords: Vector2, selectedPiece: Node, targetPiece: Node) -> bool:
 	# Ensure both pieces exist and belong to the same player
@@ -77,9 +82,18 @@ func isValidFusion(selCoords: Vector2, targetCoords: Vector2, selectedPiece: Nod
 	var fusionName = getFusionPieceName(selectedPiece.name, targetPiece.name)
 	if fusionName == "":
 		return false  # No valid fusion exists
-
+		
+	var x = false
+	for i in Areas:
+		print("non target" + i)
+		print("target coor: " + vector_to_string(targetCoords))
+		if i == vector_to_string(targetCoords):
+			x = true
+	if x == false:
+		return false
+		
 	# Special movement rules for pawns
-	if selectedPiece.name == "Pawn" :
+	if selectedPiece.name == "Pawn":
 		var piece_color = selectedPiece.Item_Color
 		if piece_color == 0:
 			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y - 1)
@@ -452,7 +466,7 @@ func Get_Horse(Piece, Flow):
 	var number = 0
 	var piece_color = Piece.Item_Color
 	while number != 8:
-		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color):
+		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and ((Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color) or (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color == piece_color and Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).name in set)):
 			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
 		number += 1
 		match number:
