@@ -105,153 +105,228 @@ func Get_Moveable_Areas():
 	var Piece = get_node("Flow/" + Selected_Node).get_child(0)
 	# For the selected piece that we have, we can get the movement that we need here.
 	if Piece.name == "Pawn":
-		Get_Pawn(Piece, Flow)
+		Get_Pawn(Piece, Flow)#done
 	elif Piece.name == "Bishop":
-		Get_Diagonals(Flow)
+		Get_Diagonals(Flow)#done
 	elif Piece.name == "King":
-		Get_Around(Piece)
+		Get_Around(Piece)#done
 	elif Piece.name == "Queen":
-		Get_Diagonals(Flow)
-		Get_Rows(Flow)
+		Get_Diagonals(Flow)#done
+		Get_Rows(Flow)#done
 	elif Piece.name == "Rook":
-		Get_Rows(Flow)
+		Get_Rows(Flow)#done
 	elif Piece.name == "Knight":
-		Get_Horse()
+		Get_Horse()#done
+	
+	print(Areas)
 
 func Get_Pawn(Piece, Flow):
-	# This is for going from the bottom to the top, also known as the white pawns.
-	if Piece.Item_Color == 0:
-		if not Is_Null(Location_X + "-" + str(int(Location_Y) - 1)) && Flow.get_node(Location_X + "-" + str(int(Location_Y) - 1)).get_child_count() == 0:
-			Areas.append(Location_X + "-" + str(int(Location_Y) - 1))
-		if not Is_Null(Location_X + "-" + str(int(Location_Y) - 2)) && Piece.Double_Start == true && Flow.get_node(Location_X + "-" + str(int(Location_Y) - 2)).get_child_count() == 0:
-			Areas.append(Location_X + "-" + str(int(Location_Y) - 2))
-		# Attacking squares
-		if not Is_Null(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)) && Flow.get_node(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)).get_child_count() == 1:
-			Areas.append(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1))
-		if not Is_Null(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)) && Flow.get_node(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)).get_child_count() == 1:
-			Areas.append(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1))
-		# En passant
-		if not Is_Null(str(int(Location_X) - 1) + "-" + Location_Y) && not Is_Null(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)):
-			if Flow.get_node(str(int(Location_X) - 1) + "-" + Location_Y).get_child_count() == 1 && Flow.get_node(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)).get_child_count() != 1:
-				Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
-				Special_Area.append(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1))
-		if not Is_Null(str(int(Location_X) + 1) + "-" + Location_Y) && not Is_Null(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)):
-			if Flow.get_node(str(int(Location_X) + 1) + "-" + Location_Y).get_child_count() == 1 && Flow.get_node(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)).get_child_count() != 1:
-				Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
-				Special_Area.append(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1))
-	# Black pawns
-	else:
-		if not Is_Null(Location_X + "-" + str(int(Location_Y) + 1)) && Flow.get_node(Location_X + "-" + str(int(Location_Y) + 1)).get_child_count() == 0:
-			Areas.append(Location_X + "-" + str(int(Location_Y) + 1))
-		if not Is_Null(Location_X + "-" + str(int(Location_Y) + 2)) && Piece.Double_Start == true && Flow.get_node(Location_X + "-" + str(int(Location_Y) + 2)).get_child_count() == 0:
-			Areas.append(Location_X + "-" + str(int(Location_Y) + 2))
-		# Attacking squares
-		if not Is_Null(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)) && Flow.get_node(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)).get_child_count() == 1:
-			Areas.append(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1))
-		if not Is_Null(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)) && Flow.get_node(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)).get_child_count() == 1:
-			Areas.append(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1))
-		if not Is_Null(str(int(Location_X) - 1) + "-" + Location_Y) && not Is_Null(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)):
-			if Flow.get_node(str(int(Location_X) - 1) + "-" + Location_Y).get_child_count() == 1 && Flow.get_node(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)).get_child_count() != 1:
-				Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
-				Special_Area.append(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1))
-		if not Is_Null(str(int(Location_X) + 1) + "-" + Location_Y) && not Is_Null(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)):
-			if Flow.get_node(str(int(Location_X) + 1) + "-" + Location_Y).get_child_count() == 1 && Flow.get_node(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)).get_child_count() != 1:
-				Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
-				Special_Area.append(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1))
+	var piece_color = Piece.Item_Color  # Using the passed Piece's color
+
+	if piece_color == 0:  # White pawn
+		# Forward move one step (must be empty)
+		var forward_one = Location_X + "-" + str(int(Location_Y) - 1)
+		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
+			Areas.append(forward_one)
+			# Forward move two steps on first move (both squares must be empty)
+			if Piece.Double_Start:
+				var forward_two = Location_X + "-" + str(int(Location_Y) - 2)
+				if not Is_Null(forward_two) and Flow.get_node(forward_two).get_child_count() == 0:
+					Areas.append(forward_two)
+		# Diagonal capture moves:
+		var diag_left = str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)
+		var diag_right = str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)
+		if not Is_Null(diag_left):
+			var target = Flow.get_node(diag_left)
+			if target.get_child_count() > 0:
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_left)
+		if not Is_Null(diag_right):
+			var target = Flow.get_node(diag_right)
+			if target.get_child_count() > 0:
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_right)
+	else:  # Black pawn
+		# Forward move one step (must be empty)
+		var forward_one = Location_X + "-" + str(int(Location_Y) + 1)
+		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
+			Areas.append(forward_one)
+			# Forward move two steps on first move
+			if Piece.Double_Start:
+				var forward_two = Location_X + "-" + str(int(Location_Y) + 2)
+				if not Is_Null(forward_two) and Flow.get_node(forward_two).get_child_count() == 0:
+					Areas.append(forward_two)
+		# Diagonal capture moves:
+		var diag_left = str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)
+		var diag_right = str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)
+		if not Is_Null(diag_left):
+			var target = Flow.get_node(diag_left)
+			if target.get_child_count() > 0:
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_left)
+		if not Is_Null(diag_right):
+			var target = Flow.get_node(diag_right)
+			if target.get_child_count() > 0:
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(diag_right)
 
 func Get_Around(Piece):
-	# Single Rows
-	if not Is_Null(Location_X + "-" + str(int(Location_Y) + 1)):
-		Areas.append(Location_X + "-" + str(int(Location_Y) + 1))
-	if not Is_Null(Location_X + "-" + str(int(Location_Y) - 1)):
-		Areas.append(Location_X + "-" + str(int(Location_Y) - 1))
-	if not Is_Null(str(int(Location_X) + 1) + "-" + Location_Y):
-		Areas.append(str(int(Location_X) + 1) + "-" + Location_Y)
-	if not Is_Null(str(int(Location_X) - 1) + "-" + Location_Y):
-		Areas.append(str(int(Location_X) - 1) + "-" + Location_Y)
-	# Diagonal
-	if not Is_Null(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1)):
-		Areas.append(str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1))
-	if not Is_Null(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1)):
-		Areas.append(str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1))
-	if not Is_Null(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1)):
-		Areas.append(str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1))
-	if not Is_Null(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)):
-		Areas.append(str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1))
-	# Castling, if that is the case
-	if Piece.Castling == true:
-		Castle()
+	var Flow = get_node("Flow")  # ADDED: Declare Flow variable
+	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
+	var positions = [
+		Location_X + "-" + str(int(Location_Y) + 1),
+		Location_X + "-" + str(int(Location_Y) - 1),
+		str(int(Location_X) + 1) + "-" + Location_Y,
+		str(int(Location_X) - 1) + "-" + Location_Y,
+		str(int(Location_X) + 1) + "-" + str(int(Location_Y) + 1),
+		str(int(Location_X) - 1) + "-" + str(int(Location_Y) + 1),
+		str(int(Location_X) + 1) + "-" + str(int(Location_Y) - 1),
+		str(int(Location_X) - 1) + "-" + str(int(Location_Y) - 1)
+	]
+	for pos_str in positions:
+		if not Is_Null(pos_str):
+			var target = Flow.get_node(pos_str)
+			if target.get_child_count() == 0:
+				Areas.append(pos_str)
+			else:
+				# CHANGED: Add if the occupying piece is of reversed color.
+				var occupant = target.get_child(0)
+				if occupant.Item_Color != piece_color:
+					Areas.append(pos_str)
 
 func Get_Rows(Flow):
+	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
+
 	var Add_X = 1
-	# Getting the horizontal rows first.
+	# To the right
 	while not Is_Null(str(int(Location_X) + Add_X) + "-" + Location_Y):
-		Areas.append(str(int(Location_X) + Add_X) + "-" + Location_Y)
-		if Flow.get_node(str(int(Location_X) + Add_X) + "-" + Location_Y).get_child_count() != 0:
+		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + Location_Y)
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			# CHANGED: Allow enemy capture then break.
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_X += 1
+
+	# To the left
 	Add_X = 1
 	while not Is_Null(str(int(Location_X) - Add_X) + "-" + Location_Y):
-		Areas.append(str(int(Location_X) - Add_X) + "-" + Location_Y)
-		if Flow.get_node(str(int(Location_X) - Add_X) + "-" + Location_Y).get_child_count() != 0:
+		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + Location_Y)
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_X += 1
+
 	var Add_Y = 1
-	# Now we are getting the vertical rows.
+	# Downward
 	while not Is_Null(Location_X + "-" + str(int(Location_Y) + Add_Y)):
-		Areas.append(Location_X + "-" + str(int(Location_Y) + Add_Y))
-		if Flow.get_node(Location_X + "-" + str(int(Location_Y) + Add_Y)).get_child_count() != 0:
+		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) + Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_Y += 1
+
 	Add_Y = 1
+	# Upward
 	while not Is_Null(Location_X + "-" + str(int(Location_Y) - Add_Y)):
-		Areas.append(Location_X + "-" + str(int(Location_Y) - Add_Y))
-		if Flow.get_node(Location_X + "-" + str(int(Location_Y) - Add_Y)).get_child_count() != 0:
+		var target = Flow.get_node(Location_X + "-" + str(int(Location_Y) - Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_Y += 1
-	
+
 func Get_Diagonals(Flow):
+	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color  # ADDED: Get current piece color
 	var Add_X = 1
 	var Add_Y = 1
+	# Down-right diagonal
 	while not Is_Null(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y)):
-		Areas.append(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y))
-		if Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y)).get_child_count() != 0:
+		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) + Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			# CHANGED: Allow enemy capture then break.
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
+
 	Add_X = 1
 	Add_Y = 1
+	# Down-left diagonal
 	while not Is_Null(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y)):
-		Areas.append(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y))
-		if Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y)).get_child_count() != 0:
+		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) + Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
+
 	Add_X = 1
 	Add_Y = 1
+	# Up-right diagonal
 	while not Is_Null(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y)):
-		Areas.append(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y))
-		if Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y)).get_child_count() != 0:
+		var target = Flow.get_node(str(int(Location_X) + Add_X) + "-" + str(int(Location_Y) - Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
+
 	Add_X = 1
 	Add_Y = 1
+	# Up-left diagonal
 	while not Is_Null(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y)):
-		Areas.append(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y))
-		if Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y)).get_child_count() != 0:
+		var target = Flow.get_node(str(int(Location_X) - Add_X) + "-" + str(int(Location_Y) - Add_Y))
+		if target.get_child_count() == 0:
+			Areas.append(target.name)
+		else:
+			var occupant = target.get_child(0)
+			if occupant.Item_Color != piece_color:
+				Areas.append(target.name)
 			break
 		Add_X += 1
 		Add_Y += 1
 
 func Get_Horse():
+	var Flow = get_node("Flow")
 	var The_X = 2
 	var The_Y = 1
 	var number = 0
+	var piece_color = get_node("Flow/" + Selected_Node).get_child(0).Item_Color
 	while number != 8:
 		# So this one is interesting. This is most likely the cleanest code here.
 		# Get the numbers, replace the numbers, and loop until it stops.
-		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)):
+		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color):
 			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
 		number += 1
 		match number:
@@ -276,6 +351,8 @@ func Get_Horse():
 			7:
 				The_X = -1
 				The_Y = -2
+				
+	print(Areas)
 
 func Castle():
 	# This is the castling section right here, used if a person wants to castle.
