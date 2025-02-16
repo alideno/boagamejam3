@@ -9,21 +9,27 @@ script = ExtResource("1_3lp8n")
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 729.0
+offset_top = 27.0
+offset_right = 1212.0
+offset_bottom = 202.0
+theme_override_font_sizes/font_size = 128
 text = "you win"
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 819.0
+offset_top = 450.0
+offset_right = 859.0
+offset_bottom = 490.0
 
 [node name="Button" type="Button" parent="."]
 layout_mode = 0
-offset_left = 5.0
-offset_top = 25.0
-offset_right = 305.0
-offset_bottom = 125.0
-text = "play again"
+offset_left = 762.0
+offset_top = 485.0
+offset_right = 1169.0
+offset_bottom = 603.0
+theme_override_font_sizes/font_size = 80
+text = "Play Again"
 
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
