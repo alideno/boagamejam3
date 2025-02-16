@@ -11,7 +11,7 @@ var Areas: PackedStringArray
 # Special_Area is used for castling/en passant conditions.
 var Special_Area: PackedStringArray
 
-var set = ["Pawn", "Knight", "Bishop", "Rook", "Queen"]
+var setpiece = ["Pawn", "Knight", "Bishop", "Rook", "Queen"]
 
 func _on_flow_send_location(location: String):
 	# Parse the location string (e.g. "3-4") into coordinates.
@@ -455,8 +455,8 @@ func Get_Bishop(Piece, Flow):
 				Areas.append(candidate)
 			else:
 				# If an opponent's piece is present, capture is allowed, but no further sliding.
-				if candidateNode.get_child(0).Item_Color != piece_color:
-					Areas.append(candidate)
+				#if candidateNode.get_child(0).Item_Color != piece_color:
+				Areas.append(candidate)
 				break  # Stop sliding in this direction if any piece is encountered.
 	
 
@@ -466,7 +466,7 @@ func Get_Horse(Piece, Flow):
 	var number = 0
 	var piece_color = Piece.Item_Color
 	while number != 8:
-		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and ((Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color) or (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color == piece_color and Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).name in set)):
+		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and ((Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color) or (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color == piece_color and Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).name in setpiece)):
 			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
 		number += 1
 		match number:
