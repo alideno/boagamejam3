@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://Generator.gd" id="1_ckrtr"]
 [ext_resource type="Script" path="res://Game.gd" id="1_f1l42"]
 [ext_resource type="AudioStream" uid="uid://2xlar4s16lj4" path="res://sounds/audiomass-output.mp3" id="3_gxg25"]
+[ext_resource type="Texture2D" uid="uid://c8hvee7wsajr2" path="res://assets/table.png" id="3_lx0rf"]
 [ext_resource type="Texture2D" uid="uid://ihwk3uugs83m" path="res://pixil-frame-0-3.png" id="3_n3l7n"]
 
 [node name="Board" type="Control"]
@@ -21,17 +22,19 @@ script = ExtResource("1_ckrtr")
 [node name="TextureButton2" type="TextureButton" parent="."]
 layout_mode = 0
 offset_left = 1050.0
-offset_top = 550.0
+offset_top = 840.0
 offset_right = 1150.0
-offset_bottom = 650.0
+offset_bottom = 940.0
+scale = Vector2(2, 2)
 texture_normal = ExtResource("3_n3l7n")
 
 [node name="TextureButton" type="TextureButton" parent="."]
 layout_mode = 0
 offset_left = 1050.0
-offset_top = 450.0
+offset_top = -40.0
 offset_right = 1150.0
-offset_bottom = 550.0
+offset_bottom = 60.0
+scale = Vector2(2, 2)
 texture_normal = ExtResource("3_n3l7n")
 
 [node name="MoveSound" type="AudioStreamPlayer2D" parent="."]
@@ -45,6 +48,10 @@ stream = ExtResource("3_gxg25")
 
 [node name="Soundtrack" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("3_gxg25")
+[node name="Table" type="Sprite2D" parent="."]
+show_behind_parent = true
+position = Vector2(500, 500)
+texture = ExtResource("3_lx0rf")
 
 [connection signal="send_location" from="Flow" to="." method="_on_flow_send_location"]
 [connection signal="pressed" from="TextureButton2" to="." method="_on_texture_button_2_pressed"]

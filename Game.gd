@@ -1208,3 +1208,12 @@ func Reset_Tile_Colors():
 			if tile is TextureButton:
 				var is_white = (x + y) % 2 == 0
 				tile.texture_normal = load("res://assets/white_board.png") if is_white else load("res://assets/black_board.png")
+
+
+func _on_texture_button_pressed() -> void:
+	GameData.winner = "White"
+	get_tree().change_scene_to_file("res://endgame.tscn")
+
+func _on_texture_button_2_pressed() -> void:
+	GameData.winner = "Black"
+	get_tree().change_scene_to_file("res://endgame.tscn")
