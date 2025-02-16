@@ -1211,9 +1211,9 @@ func Reset_Tile_Colors():
 
 
 func _on_texture_button_pressed() -> void:
-	GameData.winner = "White"
+	GameData.winner = "white"
 	get_tree().change_scene_to_file("res://endgame.tscn")
 
 func _on_texture_button_2_pressed() -> void:
-	GameData.winner = "Black"
+	GameData.winner = "black"
 	get_tree().change_scene_to_file("res://endgame.tscn")

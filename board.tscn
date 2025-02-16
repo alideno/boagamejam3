@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://d0qyk6v20uief"]
+[gd_scene load_steps=8 format=3 uid="uid://d0qyk6v20uief"]
 
 [ext_resource type="Script" path="res://Generator.gd" id="1_ckrtr"]
 [ext_resource type="Script" path="res://Game.gd" id="1_f1l42"]
 [ext_resource type="AudioStream" uid="uid://2xlar4s16lj4" path="res://sounds/audiomass-output.mp3" id="3_gxg25"]
 [ext_resource type="Texture2D" uid="uid://c8hvee7wsajr2" path="res://assets/table.png" id="3_lx0rf"]
 [ext_resource type="Texture2D" uid="uid://ihwk3uugs83m" path="res://pixil-frame-0-3.png" id="3_n3l7n"]
+[ext_resource type="AudioStream" uid="uid://dmnnb5tb62yqo" path="res://sounds/fusion_sound.mp3" id="5_ggg35"]
 [ext_resource type="AudioStream" uid="uid://qd7oti6kyhil" path="res://sounds/Proje50ChessGame.mp3" id="5_i5t7f"]
 
 [node name="Board" type="Control"]
@@ -42,7 +43,8 @@ texture_normal = ExtResource("3_n3l7n")
 stream = ExtResource("3_gxg25")
 
 [node name="FuseSound" type="AudioStreamPlayer2D" parent="."]
-stream = ExtResource("3_gxg25")
+stream = ExtResource("5_ggg35")
+volume_db = 2.0
 
 [node name="CaptureSound" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("3_gxg25")
