@@ -29,7 +29,7 @@ window/size/viewport_height=800
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/Chess/plugin.cfg")
 
 [filesystem]
 

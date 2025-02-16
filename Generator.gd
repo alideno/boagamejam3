@@ -13,7 +13,7 @@ func _ready():
 	self.add_theme_constant_override("h_separation", 0)
 	self.add_theme_constant_override("v_separation", 0)
 	var color = false
-	if Board_X_Size < 0 || Board_Y_Size < 0:
+	if Board_X_Size < 0 or Board_Y_Size < 0:
 		return
 	var Number_X = 0
 	var Number_Y = 0
@@ -89,6 +89,7 @@ func Summon(Piece_Name: String, color: int):
 		"Pawn":
 			Piece = Pawn.new()
 			Piece.name = "Pawn"
+			# New property for fusion: not elite by default.
 		"King":
 			Piece = King.new()
 			Piece.name = "King"
@@ -104,15 +105,12 @@ func Summon(Piece_Name: String, color: int):
 		"Bishop":
 			Piece = Bishop.new()
 			Piece.name = "Bishop"
-<<<<<<< Updated upstream
-=======
 		"ElitePawn":
 			Piece = ElitePawn.new()
 			Piece.name = "ElitePawn"
 		"GuardedKnight":
 			Piece = GuardedKnight.new()
 			Piece.name = "GuardedKnight"
->>>>>>> Stashed changes
 	Piece.Item_Color = color
 	Piece.position = Vector2(Tile_X_Size / 2, Tile_Y_Size / 2)
 	return Piece
