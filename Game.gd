@@ -210,7 +210,7 @@ func processFuse(location: String):
 	targetNode.add_child(FusedPiece)
 	
 	FusedPiece.global_position = targetNode.global_position + Vector2(50,50)
-	
+	$fuseSound.play()
 	Update_Game(targetNode)
 
 func getFusionPieceName(piece1: String, piece2: String) -> String:
@@ -244,6 +244,7 @@ func processCapture(location: String):
 			targetNode.get_child(0).free()
 			piece.reparent(targetNode)
 			piece.position = pos
+			$CaptureSound.play()
 			Update_Game(targetNode)
 			return
 
@@ -255,6 +256,7 @@ func processMove(location: String):
 			var piece = get_node("Flow/" + Selected_Node).get_child(0)
 			piece.reparent(targetNode)
 			piece.position = pos
+			$MoveSound.play()
 			Update_Game(targetNode)
 			return
 

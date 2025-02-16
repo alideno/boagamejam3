@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://f7yuwl0t6wtm"
-path="res://.godot/imported/black_win.png-628ab4a6eb85d5bb49587f00173d1283.ctex"
+uid="uid://cn17gvb5wtmup"
+path="res://.godot/imported/moves.png-c1d1dd1c8704ca7d566ca697729e34df.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/black_win.png"
-dest_files=["res://.godot/imported/black_win.png-628ab4a6eb85d5bb49587f00173d1283.ctex"]
+source_file="res://stuff/moves.png"
+dest_files=["res://.godot/imported/moves.png-c1d1dd1c8704ca7d566ca697729e34df.ctex"]
 
 [params]
 

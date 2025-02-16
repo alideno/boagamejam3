@@ -8,7 +8,13 @@ extends FlowContainer
 
 signal send_location
 
+func _input(event):
+	if Input.is_action_just_pressed("Escape"):
+		get_tree().change_scene_to_file("res://main_menu.tscn")
+
 func _ready():
+	
+	$"../Soundtrack".play()
 	# stop negative numbers from happening
 	self.add_theme_constant_override("h_separation", 0)
 	self.add_theme_constant_override("v_separation", 0)
