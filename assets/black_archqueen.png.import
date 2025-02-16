@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fju4d2gx23ls"
-path="res://.godot/imported/Sprite-0004.png-9317b95cd2a98fe7bb09a4d8c5f7d3fe.ctex"
+uid="uid://d1d2uqdoj6n24"
+path="res://.godot/imported/black_archqueen.png-45acee876af9feb2cb119051d88b0a73.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/pieces/Sprite-0004.png"
-dest_files=["res://.godot/imported/Sprite-0004.png-9317b95cd2a98fe7bb09a4d8c5f7d3fe.ctex"]
+source_file="res://assets/black_archqueen.png"
+dest_files=["res://.godot/imported/black_archqueen.png-45acee876af9feb2cb119051d88b0a73.ctex"]
 
 [params]
 

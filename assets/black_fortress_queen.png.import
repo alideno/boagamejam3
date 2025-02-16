@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bcxs5y3me8t56"
-path="res://.godot/imported/G-knight.png-b243a08bc23542a134780f88c4cdbbcd.ctex"
+uid="uid://cnqm0xufp8tew"
+path="res://.godot/imported/black_fortress_queen.png-03f62764677315d311b6698e12f8d8ce.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/pieces/G-knight.png"
-dest_files=["res://.godot/imported/G-knight.png-b243a08bc23542a134780f88c4cdbbcd.ctex"]
+source_file="res://assets/black_fortress_queen.png"
+dest_files=["res://.godot/imported/black_fortress_queen.png-03f62764677315d311b6698e12f8d8ce.ctex"]
 
 [params]
 
