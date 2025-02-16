@@ -1,8 +1,26 @@
-[gd_scene format=3 uid="uid://6om5k7cjm06e"]
+[gd_scene load_steps=2 format=3 uid="uid://c334bj3il8ocl"]
 
-[node name="Node2D" type="Node2D"]
+[ext_resource type="Script" path="res://endgame.gd" id="1_3lp8n"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_3lp8n")
 
 [node name="Label" type="Label" parent="."]
 offset_right = 40.0
 offset_bottom = 23.0
 text = "you win"
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Button" type="Button" parent="."]
+offset_left = 5.0
+offset_top = 25.0
+offset_right = 305.0
+offset_bottom = 125.0
+text = "play again"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
