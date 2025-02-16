@@ -231,14 +231,16 @@ func processCapture(location: String):
 		if i == targetNode.name:
 			var piece = get_node("Flow/" + Selected_Node).get_child(0)
 			if targetNode.get_child(0).name == "King":
-				var color
-				if(1 == targetNode.get_child(0).Item_Color):
-					color = "white"
-				else: 
-					color = "black"
-				print(color  + " wins")
+				# Determine the winning color (the king's opponent wins)
+				var winner_color = ""
+				if targetNode.get_child(0).Item_Color == 1:
+					winner_color = "white"
+				else:
+					winner_color = "black"
+				GameData.winner = winner_color
+				# Change to the end game scene.
 				get_tree().change_scene_to_file("res://endgame.tscn")
-				
+				return
 			targetNode.get_child(0).free()
 			piece.reparent(targetNode)
 			piece.position = pos
