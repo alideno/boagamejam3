@@ -336,7 +336,7 @@ func Get_Moveable_Areas():
 			type = 0
 			newArea.append(area)
 		if (temp != null) and ((temp.name in setpiece) or (Piece.Item_Color != temp.Item_Color)):
-			if  ((temp.name in setpiece) and (Piece.Item_Color != temp.Item_Color)):
+			if  (Piece.Item_Color != temp.Item_Color):
 				type = 1
 				
 			else:
@@ -351,9 +351,22 @@ func Get_Moveable_Areas():
 			is_white = 0
 		else:
 			is_white = 1
-		print(type)
 		if tile is TextureButton:
-			tile.texture_normal = load("res://assets/highlight_move.png")
+			if type == 0:
+				if is_white == 0:
+					tile.texture_normal = load("res://assets/highlight_move_black.png")
+				else:
+					tile.texture_normal = load("res://assets/highlight_move_black.png")
+			elif type == 1:
+				if is_white == 0:
+					tile.texture_normal = load("res://assets/highlight_capture_black.png")
+				else:
+					tile.texture_normal = load("res://assets/highlight_capture_black.png")
+			else:
+				if is_white == 0:
+					tile.texture_normal = load("res://assets/highlight_fuse_white.png")
+				else:
+					tile.texture_normal = load("res://assets/highlight_fuse_white.png")
 	Areas = newArea
 
 
