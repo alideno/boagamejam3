@@ -11,6 +11,8 @@ var Areas: PackedStringArray
 # Special_Area is used for castling/en passant conditions.
 var Special_Area: PackedStringArray
 
+var setpiece = ["Pawn", "Knight", "Bishop", "Rook", "Queen"]
+
 func _on_flow_send_location(location: String):
 	# Parse the location string (e.g. "3-4") into coordinates.
 	parseLocation(location)
@@ -27,6 +29,7 @@ func parseLocation(location: String):
 
 func processSelection(location: String):
 	var targetNode = get_node("Flow/" + location)
+
 	# If no piece is selected yet, select a friendly piece.
 	if Selected_Node == "":
 		if targetNode.get_child_count() != 0 and targetNode.get_child(0).Item_Color == Turn:
@@ -37,34 +40,69 @@ func processSelection(location: String):
 	var selectedPiece = get_node("Flow/" + Selected_Node).get_child(0)
 	if targetNode.get_child_count() != 0:
 		var targetPiece = targetNode.get_child(0)
+
 		# Friendly piece on target.
 		if targetPiece.Item_Color == Turn:
-			if targetPiece.name == "Rook":
-				processCastling(location)
-			# Fusion: only allow if both are pawns and the target lies on a valid diagonal.
-			elif targetPiece.name == "Pawn" and selectedPiece.name == "Pawn":
-				var selCoords = parseLocationToCoords(Selected_Node)
-				var targetCoords = parseLocationToCoords(location)
-				if isValidPawnFusion(selCoords, targetCoords, selectedPiece.Item_Color):
-					processFuse(location)
-				else:
-					reselectPiece(location)
+			var selCoords = parseLocationToCoords(Selected_Node)
+			var targetCoords = parseLocationToCoords(location)
+
+			# Check if fusion is allowed
+			if isValidFusion(selCoords, targetCoords, selectedPiece, targetPiece):
+				processFuse(location)
 			else:
 				reselectPiece(location)
+
 		# Enemy piece on target.
 		else:
 			if targetPiece.name == "Pawn" and targetPiece.get("En_Passant") == true and Special_Area.size() != 0 and Special_Area[0] == targetNode.name:
 				processEnPassant(location)
-			else:
+			else: # if anyone wants to add the checkmate mechanizm than this is a nice place to start 
 				processCapture(location)
 	else:
 		# Empty square: attempt a normal move.
 		processMove(location)
 
+
+
 # Helper: Parse a location string ("x-y") into a Vector2 with integer coordinates.
 func parseLocationToCoords(location: String) -> Vector2:
 	var parts = location.split("-")
 	return Vector2(int(parts[0]), int(parts[1]))
+	
+func vector_to_string(vec: Vector2) -> String:
+	return str(vec.x) + "-" + str(vec.y)
+	
+
+func isValidFusion(selCoords: Vector2, targetCoords: Vector2, selectedPiece: Node, targetPiece: Node) -> bool:
+	# Ensure both pieces exist and belong to the same player
+	if not selectedPiece or not targetPiece or selectedPiece.Item_Color != targetPiece.Item_Color:
+		return false
+
+	# Check if fusion is possible using the Fusion_Piece_Map
+	var fusionName = getFusionPieceName(selectedPiece.name, targetPiece.name)
+	if fusionName == "":
+		return false  # No valid fusion exists
+		
+	var x = false
+	for i in Areas:
+		print("non target" + i)
+		print("target coor: " + vector_to_string(targetCoords))
+		if i == vector_to_string(targetCoords):
+			x = true
+	if x == false:
+		return false
+		
+	# Special movement rules for pawns
+	if selectedPiece.name == "Pawn":
+		var piece_color = selectedPiece.Item_Color
+		if piece_color == 0:
+			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y - 1)
+		else:
+			return (abs(targetCoords.x - selCoords.x) == 1) and (targetCoords.y == selCoords.y + 1)
+
+	# If no special movement rules apply, allow fusion
+	return true
+	
 
 # Helper: For a pawn, fusion (friendly capture) is allowed only if the target is on the correct diagonal.
 func isValidPawnFusion(selCoords: Vector2, targetCoords: Vector2, piece_color: int) -> bool:
@@ -84,17 +122,18 @@ func reselectPiece(location: String):
 	Get_Moveable_Areas()
 
 func processCastling(location: String):
-	var targetNode = get_node("Flow/" + location)
-	for i in Areas:
-		if i == targetNode.name:
-			var king = get_node("Flow/" + Selected_Node).get_child(0)
-			var rook = targetNode.get_child(0)
-			king.reparent(get_node("Flow/" + Special_Area[1]))
-			rook.reparent(get_node("Flow/" + Special_Area[0]))
-			king.position = pos
-			rook.position = pos
-			Update_Game(king.get_parent())
-			return
+	pass
+	#var targetNode = get_node("Flow/" + location)
+	#for i in Areas:
+		#if i == targetNode.name:
+			#var king = get_node("Flow/" + Selected_Node).get_child(0)
+			#var rook = targetNode.get_child(0)
+			#king.reparent(get_node("Flow/" + Special_Area[1]))
+			#rook.reparent(get_node("Flow/" + Special_Area[0]))
+			#king.position = pos
+			#rook.position = pos
+			#Update_Game(king.get_parent())
+			#return
 
 func processEnPassant(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -107,20 +146,84 @@ func processEnPassant(location: String):
 			Update_Game(pawn.get_parent())
 			return
 
+var Fusion_Piece_Map = {  
+	# Pawn fusions  
+	["Pawn", "Pawn"]: "ElitePawn",  
+
+	# Knight fusions  
+	["Pawn", "Knight"]: "GuardedKnight",  
+	["Knight", "Knight"]: "Cavalier",  
+
+	# Bishop fusions  
+	["Pawn", "Bishop"]: "GuardedBishop",  
+	["Knight", "Bishop"]: "Crusader",  
+	["Bishop", "Bishop"]: "Pope",  
+
+	# Rook fusions  
+	["Pawn", "Rook"]: "GuardedRook",  
+	["Knight", "Rook"]: "SiegeCamp",  
+	["Bishop", "Rook"]: "Cathedral",  
+	["Rook", "Rook"]: "Fortress",  
+
+	# Queen fusions  
+	["Pawn", "Queen"]: "GuardedQueen",  
+	["Knight", "Queen"]: "Valkyre",  
+	["Bishop", "Queen"]: "Archqueen",  
+	["Rook", "Queen"]: "FortressQueen",  
+	["Queen", "Queen"]: "Empress"  
+}
+
 func processFuse(location: String):
 	var targetNode = get_node("Flow/" + location)
-	var capturingPawn = get_node("Flow/" + Selected_Node).get_child(0)
-	# Remove the target friendly pawn.
-	targetNode.get_child(0).free()
+	var capturingPiece = get_node("Flow/" + Selected_Node).get_child(0)
+	var targetPiece = targetNode.get_child(0)
+
+	# Ensure both pieces exist and are of the same color.
+	if not capturingPiece or not targetPiece or capturingPiece.Item_Color != targetPiece.Item_Color:
+		return
 	
-	var elitePawn = preload("res://addons/Chess/Scripts/ElitePawn.gd").new()
-	elitePawn.name = "ElitePawn"   # Ensure its name is set
-	# Option 2: Alternatively, you can use set()/get() if the property isn't directly accessible:
-	elitePawn.set("Item_Color", capturingPawn.get("Item_Color"))
-	elitePawn.position = pos
-	capturingPawn.queue_free()
-	targetNode.add_child(elitePawn)
+	# Get fusion name
+	var fusionPiece = getFusionPieceName(capturingPiece.name, targetPiece.name)
+	if fusionPiece == "":
+		print("Error: No valid fusion for " + capturingPiece.name + " + " + targetPiece.name)
+		return
+	
+	# Load the fusion piece script dynamically
+	var fused_script_path = "res://addons/Chess/Scripts/" + fusionPiece + ".gd"
+	var fused_script = load(fused_script_path)
+
+
+	if not fused_script:
+		print("Error: Could not load fusion piece script at " + fused_script_path)
+		return
+	
+	# Create the new fused piece
+	var FusedPiece = fused_script.new()
+	FusedPiece.name = fusionPiece
+	FusedPiece.set("Item_Color", capturingPiece.get("Item_Color"))
+	FusedPiece.position = targetNode.position
+	
+	# Remove old pieces
+	capturingPiece.queue_free()
+	targetPiece.queue_free()
+
+	targetNode.add_child(FusedPiece)
+	
+	FusedPiece.global_position = targetNode.global_position + Vector2(50,50)
+	
 	Update_Game(targetNode)
+
+func getFusionPieceName(piece1: String, piece2: String) -> String:
+	var key1 = [piece1, piece2]
+	var key2 = [piece2, piece1]  # Check both orders
+	
+	if key1 in Fusion_Piece_Map:
+		return Fusion_Piece_Map[key1]
+	if key2 in Fusion_Piece_Map:
+		return Fusion_Piece_Map[key2]
+	
+	return ""  # No valid fusion found
+
 
 func processCapture(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -128,12 +231,22 @@ func processCapture(location: String):
 		if i == targetNode.name:
 			var piece = get_node("Flow/" + Selected_Node).get_child(0)
 			if targetNode.get_child(0).name == "King":
-				print("Damn, you win!")
+				# Determine the winning color (the king's opponent wins)
+				var winner_color = ""
+				if targetNode.get_child(0).Item_Color == 1:
+					winner_color = "White"
+				else:
+					winner_color = "Black"
+				GameData.winner = winner_color
+				# Change to the end game scene.
+				get_tree().change_scene_to_file("res://endgame.tscn")
+				return
 			targetNode.get_child(0).free()
 			piece.reparent(targetNode)
 			piece.position = pos
 			Update_Game(targetNode)
 			return
+
 
 func processMove(location: String):
 	var targetNode = get_node("Flow/" + location)
@@ -148,6 +261,7 @@ func processMove(location: String):
 func Update_Game(node):
 	Selected_Node = ""
 	Turn = 1 - Turn
+	Reset_Tile_Colors()
 	
 	# Reset en passant flags on enemy pawns.
 	var things = get_node("Flow").get_children()
@@ -166,30 +280,92 @@ func Update_Game(node):
 		node.get_child(0).Castling = false
 
 func Get_Moveable_Areas():
+	
 	var Flow = get_node("Flow")
 	Areas.clear()
 	Special_Area.clear()
+	Reset_Tile_Colors()
 	var Piece = get_node("Flow/" + Selected_Node).get_child(0)
-	if Piece.name == "Pawn":
-		Get_Pawn(Piece, Flow)
-	elif Piece.name == "Bishop":
-		Get_Bishop(Piece, Flow)
-	elif Piece.name == "King":
-		Get_Around(Piece)
-	elif Piece.name == "Queen":
-		Get_Bishop(Piece, Flow)
-		Get_Rook(Piece, Flow)
-	elif Piece.name == "Rook":
-		Get_Rook(Piece, Flow)
-	elif Piece.name == "Knight":
-		Get_Horse(Piece, Flow)
-	elif Piece.name == "ElitePawn":
-		Get_Elite_Pawn(Piece, Flow)
-	print(Areas)
+	
+	match Piece.name:
+		"Pawn":
+			Get_Pawn(Piece, Flow)
+		"Bishop":
+			Get_Bishop(Piece,Flow)
+		"King":
+			Get_Around(Piece)
+		"Queen":
+			Get_Bishop(Piece,Flow)
+			Get_Rook(Piece,Flow)
+		"Rook":
+			Get_Rook(Piece,Flow)
+		"Knight":
+			Get_Horse(Piece,Flow)
+		"ElitePawn":
+			Get_Elite_Pawn(Piece, Flow)
+		"GuardedKnight":
+			Get_Guarded_Knight(Piece, Flow)
+		"Cavalier":
+			Get_Cavalier(Piece,Flow)
+		"GuardedBishop":
+			Get_Guarded_Bishop(Piece,Flow)
+		"Crusader":
+			Get_Crusader(Piece,Flow)
+		"Pope":
+			Get_Pope(Piece,Flow)
+		"GuardedRook":
+			Get_Guarded_Rook(Piece,Flow)
+		"SiegeCamp":
+			Get_Siege_Camp(Piece,Flow)
+		"Cathedral":
+			Get_Cathedral(Piece,Flow)
+		"Fortress":
+			Get_Fortress(Piece,Flow)
+		"GuardedQueen":
+			Get_Guarded_Queen(Piece,Flow)
+		"Valkyre":
+			Get_Valkyre(Piece,Flow)
+		"Archqueen":
+			Get_Archqueen(Piece,Flow)
+		"FortressQueen":
+			Get_Fortress_Queen(Piece,Flow)
+		
+	var newArea = []
+	for area in Areas:
+		var temp = get_node("Flow/" + area).get_child(0)
+		var type = 0 # 0 move 1 capture 2 fuse
+		if temp == null:
+			type = 0
+			newArea.append(area)
+		if (temp != null) and ((temp.name in setpiece) or (Piece.Item_Color != temp.Item_Color)):
+			if  (Piece.Item_Color != temp.Item_Color):
+				type = 1
+				
+			else:
+				type = 2
+			newArea.append(area)
+		if(temp != null) and (temp.name not in setpiece) and (Piece.Item_Color == temp.Item_Color):
+			continue
+		var tile = Flow.get_node(area)
+		
+		var is_white = 0
+		if (int(area.left(1)) + int(area.right(1))) % 2 == 0:
+			is_white = 0
+		else:
+			is_white = 1
+		if tile is TextureButton:
+			if type == 0:
+				tile.texture_normal = load("res://assets/highlight_move.png")
+			elif type == 1:
+				tile.texture_normal = load("res://assets/highlight_capture.png")
+			else:
+				tile.texture_normal = load("res://assets/highlight_fuse.png")
+	Areas = newArea
 
 # ------------------------------------------------------------------
 # (The following movement functions remain similar to your original code.)
 # ------------------------------------------------------------------
+
 
 func Get_Pawn(Piece, Flow):
 	var piece_color = Piece.Item_Color
@@ -207,14 +383,12 @@ func Get_Pawn(Piece, Flow):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
+				Areas.append(diag_right)
 	else:  # Black pawn
 		var forward_one = Location_X + "-" + str(int(Location_Y) + 1)
 		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
@@ -229,14 +403,12 @@ func Get_Pawn(Piece, Flow):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
+				Areas.append(diag_right)
 
 func Get_Around(Piece):
 	var Flow = get_node("Flow")
@@ -279,10 +451,10 @@ func Get_Rook(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
-				if candidateNode.get_child(0).Item_Color != piece_color:
-					Areas.append(candidate)
+			else:
+				Areas.append(candidate)
 				break
-
+				
 func Get_Bishop(Piece, Flow):
 	var piece_color = Piece.Item_Color
 	var diagOffsets = [
@@ -305,8 +477,8 @@ func Get_Bishop(Piece, Flow):
 				Areas.append(candidate)
 			else:
 				# If an opponent's piece is present, capture is allowed, but no further sliding.
-				if candidateNode.get_child(0).Item_Color != piece_color:
-					Areas.append(candidate)
+				#if candidateNode.get_child(0).Item_Color != piece_color:
+				Areas.append(candidate)
 				break  # Stop sliding in this direction if any piece is encountered.
 	
 
@@ -316,7 +488,7 @@ func Get_Horse(Piece, Flow):
 	var number = 0
 	var piece_color = Piece.Item_Color
 	while number != 8:
-		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color):
+		if not Is_Null(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)) and ((Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child_count() == 0 or Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color != piece_color) or (Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).Item_Color == piece_color and Flow.get_node(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y)).get_child(0).name in setpiece)):
 			Areas.append(str(int(Location_X) + The_X) + "-" + str(int(Location_Y) + The_Y))
 		number += 1
 		match number:
@@ -577,6 +749,7 @@ func Get_Guarded_Rook(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -621,6 +794,7 @@ func Get_Siege_Camp(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -669,6 +843,7 @@ func Get_Cathedral(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -764,6 +939,7 @@ func Get_Guarded_Queen(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -812,6 +988,7 @@ func Get_Valkyre(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -865,6 +1042,7 @@ func Get_Archqueen(Piece, Flow):
 			var candidateNode = Flow.get_node(candidate)
 			if candidateNode.get_child_count() == 0:
 				Areas.append(candidate)
+			else:
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
 				break
@@ -992,30 +1170,50 @@ func Get_Fortress_Queen(Piece, Flow):
 				# If an opponent's piece is present, capture is allowed, but no further sliding.
 				if candidateNode.get_child(0).Item_Color != piece_color:
 					Areas.append(candidate)
-				break  # Stop sliding in this direction if any piece is encountered.
-
+				break  # Stop sliding in this direction if any piece is encountered.
 
 func Castle():
-	var Flow = get_node("Flow")
-	var X_Counter = 1
-	while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
-		X_Counter += 1
-	if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
-		if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
-			Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) + 2) + "-" + Location_Y)
-	X_Counter = -1
-	while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
-		X_Counter -= 1
-	if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
-		if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
-			Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
-			Special_Area.append(str(int(Location_X) - 2) + "-" + Location_Y)
+	pass
+	#var Flow = get_node("Flow")
+	#var X_Counter = 1
+	#while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
+		#X_Counter += 1
+	#if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
+		#if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
+			#Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) + 1) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) + 2) + "-" + Location_Y)
+	#X_Counter = -1
+	#while not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child_count() == 0:
+		#X_Counter -= 1
+	#if not Is_Null(str(int(Location_X) + X_Counter) + "-" + Location_Y) and Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).name == "Rook":
+		#if Flow.get_node(str(int(Location_X) + X_Counter) + "-" + Location_Y).get_child(0).Castling == true:
+			#Areas.append(str(int(Location_X) + X_Counter) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) - 1) + "-" + Location_Y)
+			#Special_Area.append(str(int(Location_X) - 2) + "-" + Location_Y)
 
 func Is_Null(Location):
 	if get_node_or_null("Flow/" + Location) == null:
 		return true
 	else:
 		return false
+
+func Reset_Tile_Colors():
+	var Flow = get_node("Flow")
+	for y in range(10):
+		for x in range(10):
+			var tile = Flow.get_node(str(x) + "-" + str(y))
+			if tile is TextureButton:
+				var is_white = (x + y) % 2 == 0
+				tile.texture_normal = load("res://assets/white_board.png") if is_white else load("res://assets/black_board.png")
+
+
+func _on_texture_button_pressed() -> void:
+	GameData.winner = "White"
+	get_tree().change_scene_to_file("res://endgame.tscn")
+	
+
+
+func _on_texture_button_2_pressed() -> void:
+	GameData.winner = "Black"
+	get_tree().change_scene_to_file("res://endgame.tscn")

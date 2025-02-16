@@ -1,7 +1,7 @@
 extends FlowContainer
 
-@export var Board_X_Size = 8
-@export var Board_Y_Size = 8
+@export var Board_X_Size = 10
+@export var Board_Y_Size = 10
 
 @export var Tile_X_Size: int = 100
 @export var Tile_Y_Size: int = 100
@@ -47,14 +47,15 @@ func _ready():
 	Regular_Game()
 
 func Regular_Game():
-	get_node("0-0").add_child(Summon("Rook", 1))
-	get_node("1-0").add_child(Summon("Knight", 1))
-	get_node("2-0").add_child(Summon("Bishop", 1))
-	get_node("3-0").add_child(Summon("Queen", 1))
-	get_node("4-0").add_child(Summon("King", 1))
-	get_node("5-0").add_child(Summon("Bishop", 1))
-	get_node("6-0").add_child(Summon("Knight", 1))
-	get_node("7-0").add_child(Summon("Rook", 1))
+	
+	get_node("1-0").add_child(Summon("Rook", 1))
+	get_node("2-0").add_child(Summon("Knight", 1))
+	get_node("3-0").add_child(Summon("Bishop", 1))
+	get_node("4-0").add_child(Summon("Queen", 1))
+	get_node("5-0").add_child(Summon("King", 1))
+	get_node("6-0").add_child(Summon("Bishop", 1))
+	get_node("7-0").add_child(Summon("Knight", 1))
+	get_node("8-0").add_child(Summon("Rook", 1))
 	
 	get_node("0-1").add_child(Summon("Pawn", 1))
 	get_node("1-1").add_child(Summon("Pawn", 1))
@@ -64,24 +65,28 @@ func Regular_Game():
 	get_node("5-1").add_child(Summon("Pawn", 1))
 	get_node("6-1").add_child(Summon("Pawn", 1))
 	get_node("7-1").add_child(Summon("Pawn", 1))
+	get_node("8-1").add_child(Summon("Pawn", 1))
+	get_node("9-1").add_child(Summon("Pawn", 1))
 	
-	get_node("0-7").add_child(Summon("Rook", 0))
-	get_node("1-7").add_child(Summon("Knight", 0))
-	get_node("2-7").add_child(Summon("Bishop", 0))
-	get_node("3-7").add_child(Summon("Queen", 0))
-	get_node("4-7").add_child(Summon("King", 0))
-	get_node("5-7").add_child(Summon("Bishop", 0))
-	get_node("6-7").add_child(Summon("Knight", 0))
-	get_node("7-7").add_child(Summon("Rook", 0))
+	get_node("1-9").add_child(Summon("Rook", 0))
+	get_node("2-9").add_child(Summon("Knight", 0))
+	get_node("3-9").add_child(Summon("Bishop", 0))
+	get_node("4-9").add_child(Summon("Queen", 0))
+	get_node("5-9").add_child(Summon("King", 0))
+	get_node("6-9").add_child(Summon("Bishop", 0))
+	get_node("7-9").add_child(Summon("Knight", 0))
+	get_node("8-9").add_child(Summon("Rook", 0))
 	
-	get_node("0-6").add_child(Summon("Pawn", 0))
-	get_node("1-6").add_child(Summon("Pawn", 0))
-	get_node("2-6").add_child(Summon("Pawn", 0))
-	get_node("3-6").add_child(Summon("Pawn", 0))
-	get_node("4-6").add_child(Summon("Pawn", 0))
-	get_node("5-6").add_child(Summon("Pawn", 0))
-	get_node("6-6").add_child(Summon("Pawn", 0))
-	get_node("7-6").add_child(Summon("Pawn", 0))
+	get_node("0-8").add_child(Summon("Pawn", 0))
+	get_node("1-8").add_child(Summon("Pawn", 0))
+	get_node("2-8").add_child(Summon("Pawn", 0))
+	get_node("3-8").add_child(Summon("Pawn", 0))
+	get_node("4-8").add_child(Summon("Pawn", 0))
+	get_node("5-8").add_child(Summon("Pawn", 0))
+	get_node("6-8").add_child(Summon("Pawn", 0))
+	get_node("7-8").add_child(Summon("Pawn", 0))
+	get_node("8-8").add_child(Summon("Pawn", 0))
+	get_node("9-8").add_child(Summon("Pawn", 0))
 
 func Summon(Piece_Name: String, color: int):
 	var Piece
@@ -108,6 +113,9 @@ func Summon(Piece_Name: String, color: int):
 		"ElitePawn":
 			Piece = ElitePawn.new()
 			Piece.name = "ElitePawn"
+		"GuardedKnight":
+			Piece = GuardedKnight.new()
+			Piece.name = "GuardedKnight"
 	Piece.Item_Color = color
 	Piece.position = Vector2(Tile_X_Size / 2, Tile_Y_Size / 2)
 	return Piece
