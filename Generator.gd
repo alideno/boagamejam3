@@ -104,6 +104,15 @@ func Summon(Piece_Name: String, color: int):
 		"Bishop":
 			Piece = Bishop.new()
 			Piece.name = "Bishop"
+<<<<<<< Updated upstream
+=======
+		"ElitePawn":
+			Piece = ElitePawn.new()
+			Piece.name = "ElitePawn"
+		"GuardedKnight":
+			Piece = GuardedKnight.new()
+			Piece.name = "GuardedKnight"
+>>>>>>> Stashed changes
 	Piece.Item_Color = color
 	Piece.position = Vector2(Tile_X_Size / 2, Tile_Y_Size / 2)
 	return Piece

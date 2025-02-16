@@ -14,12 +14,12 @@ var Double_Start = true
 var En_Passant = false
 
 func _ready():
-	self.texture = load("res://addons/Chess/Textures/WPawn.svg")
+	self.texture = load("res://assets/white_pawn.png")
 
 func _process(_delta):
 	if Item_Color != Temp_Color:
 		Temp_Color = Item_Color
 		if Item_Color == 0:
-			self.texture = load("res://addons/Chess/Textures/WPawn.svg")
+			self.texture = load("res://assets/white_pawn.png")
 		elif Item_Color == 1:
-			self.texture = load("res://addons/Chess/Textures/BPawn.svg")
+			self.texture = load("res://assets/black_pawn.png")

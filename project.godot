@@ -11,10 +11,17 @@ config_version=5
 [application]
 
 config/name="Godot Chess"
-run/main_scene="res://board.tscn"
+run/main_scene="res://main_menu.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://icon.svg"
 
+<<<<<<< Updated upstream
+=======
+[autoload]
+
+GameData="*res://GameData.gd"
+
+>>>>>>> Stashed changes
 [display]
 
 window/size/viewport_width=800
