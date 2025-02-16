@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://p8vkgmgp88g6"
-path="res://.godot/imported/ElitePawn.png-01964baccac79930f19d6837bf76edc5.ctex"
+uid="uid://bycje78ppvovk"
+path="res://.godot/imported/highlight_move.png-64977f15869571343bcc9a605f34bc57.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ElitePawn.png"
-dest_files=["res://.godot/imported/ElitePawn.png-01964baccac79930f19d6837bf76edc5.ctex"]
+source_file="res://assets/highlight_move.png"
+dest_files=["res://.godot/imported/highlight_move.png-64977f15869571343bcc9a605f34bc57.ctex"]
 
 [params]
 

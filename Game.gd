@@ -339,7 +339,7 @@ func Get_Moveable_Areas():
 			continue
 		var tile = Flow.get_node(area)
 		if tile is TextureButton:
-			tile.texture_normal = load("res://assets/highlight.png")
+			tile.texture_normal = load("res://assets/highlight_move.png")
 	Areas = newArea
 
 
