@@ -328,12 +328,19 @@ func Get_Moveable_Areas():
 		"FortressQueen":
 			Get_Fortress_Queen(Piece,Flow)
 		
-	print(Areas)
-		
+	var newArea = []
 	for area in Areas:
+		var temp = get_node("Flow/" + area).get_child(0)
+		if temp == null:
+			newArea.append(area)
+		if (temp != null) and ((temp.name in setpiece) or (Piece.Item_Color != temp.Item_Color)):
+			newArea.append(area)
+		if(temp != null) and (temp.name not in setpiece) and (Piece.Item_Color == temp.Item_Color):
+			continue
 		var tile = Flow.get_node(area)
 		if tile is TextureButton:
 			tile.texture_normal = load("res://assets/highlight.png")
+	Areas = newArea
 
 
 # ------------------------------------------------------------------
