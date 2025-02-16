@@ -3,12 +3,12 @@ extends Pawn
 class_name ElitePawn
 
 func _ready():
-	self.texture = load("res://assets/pieces/Sprite-0004.png")
+	self.texture = load("res://assets/white_elite_pawn.png")
 
 func _process(_delta):
 	if Item_Color != Temp_Color:
 		Temp_Color = Item_Color
 		if Item_Color == 0:
-			self.texture = load("res://assets/pieces/Sprite-0004.png")
+			self.texture = load("res://assets/white_elite_pawn.png")
 		elif Item_Color == 1:
-			self.texture = load("res://assets/pieces/Sprite-0004.png")
+			self.texture = load("res://assets/black_elite_pawn.png")
