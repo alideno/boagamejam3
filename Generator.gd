@@ -47,6 +47,7 @@ func _ready():
 	Regular_Game()
 
 func Regular_Game():
+	
 	get_node("1-0").add_child(Summon("Rook", 1))
 	get_node("2-0").add_child(Summon("Knight", 1))
 	get_node("3-0").add_child(Summon("Bishop", 1))

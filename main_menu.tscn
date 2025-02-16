@@ -11,11 +11,6 @@ offset_left = 560.0
 offset_right = 560.0
 script = ExtResource("1_uh7mn")
 
-[node name="Label" type="Label" parent="."]
-offset_right = 40.0
-offset_bottom = 23.0
-text = "start menu"
-
 [node name="Title" type="Sprite2D" parent="."]
 position = Vector2(400, 400)
 texture = ExtResource("2_y7jac")
