@@ -364,14 +364,12 @@ func Get_Pawn(Piece, Flow):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
+				Areas.append(diag_right)
 	else:  # Black pawn
 		var forward_one = Location_X + "-" + str(int(Location_Y) + 1)
 		if not Is_Null(forward_one) and Flow.get_node(forward_one).get_child_count() == 0:
@@ -386,14 +384,12 @@ func Get_Pawn(Piece, Flow):
 			var target = Flow.get_node(diag_left)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_left)
+				Areas.append(diag_left)
 		if not Is_Null(diag_right):
 			var target = Flow.get_node(diag_right)
 			if target.get_child_count() > 0:
 				var occupant = target.get_child(0)
-				if occupant.Item_Color != piece_color:
-					Areas.append(diag_right)
+				Areas.append(diag_right)
 
 func Get_Around(Piece):
 	var Flow = get_node("Flow")
