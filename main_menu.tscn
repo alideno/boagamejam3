@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://bmq6r7sucsu3m"]
+[gd_scene load_steps=5 format=3 uid="uid://bk3j2wgsunekw"]
 
 [ext_resource type="Script" path="res://main_menu.gd" id="1_uh7mn"]
 [ext_resource type="Texture2D" uid="uid://wl1ksrgjl3pi" path="res://assets/title.png" id="2_y7jac"]
@@ -33,5 +33,14 @@ offset_bottom = 850.0
 scale = Vector2(0.5, 0.5)
 texture_normal = ExtResource("4_bnd6x")
 
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 257.0
+offset_top = 820.0
+offset_right = 543.0
+offset_bottom = 919.0
+text = "pieces move sets"
+
 [connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ExitButton" to="." method="_on_exit_button_pressed"]
+[connection signal="pressed" from="Button" to="." method="_on_piece_pattern_pressed"]

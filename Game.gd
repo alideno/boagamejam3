@@ -210,7 +210,7 @@ func processFuse(location: String):
 	targetNode.add_child(FusedPiece)
 	
 	FusedPiece.global_position = targetNode.global_position + Vector2(50,50)
-	$fuseSound.play()
+	$FuseSound.play()	
 	Update_Game(targetNode)
 
 func getFusionPieceName(piece1: String, piece2: String) -> String:
