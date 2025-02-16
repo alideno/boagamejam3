@@ -362,7 +362,6 @@ func Get_Moveable_Areas():
 				tile.texture_normal = load("res://assets/highlight_fuse.png")
 	Areas = newArea
 
-
 # ------------------------------------------------------------------
 # (The following movement functions remain similar to your original code.)
 # ------------------------------------------------------------------
@@ -1201,8 +1200,8 @@ func Is_Null(Location):
 
 func Reset_Tile_Colors():
 	var Flow = get_node("Flow")
-	for y in range(8):
-		for x in range(8):
+	for y in range(10):
+		for x in range(10):
 			var tile = Flow.get_node(str(x) + "-" + str(y))
 			if tile is TextureButton:
 				var is_white = (x + y) % 2 == 0
