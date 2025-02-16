@@ -331,13 +331,27 @@ func Get_Moveable_Areas():
 	var newArea = []
 	for area in Areas:
 		var temp = get_node("Flow/" + area).get_child(0)
+		var type = 0 # 0 move 1 capture 2 fuse
 		if temp == null:
+			type = 0
 			newArea.append(area)
 		if (temp != null) and ((temp.name in setpiece) or (Piece.Item_Color != temp.Item_Color)):
+			if  ((temp.name in setpiece) and (Piece.Item_Color != temp.Item_Color)):
+				type = 1
+				
+			else:
+				type = 2
 			newArea.append(area)
 		if(temp != null) and (temp.name not in setpiece) and (Piece.Item_Color == temp.Item_Color):
 			continue
 		var tile = Flow.get_node(area)
+		
+		var is_white = 0
+		if (int(area.left(1)) + int(area.right(1))) % 2 == 0:
+			is_white = 0
+		else:
+			is_white = 1
+		print(type)
 		if tile is TextureButton:
 			tile.texture_normal = load("res://assets/highlight_move.png")
 	Areas = newArea
