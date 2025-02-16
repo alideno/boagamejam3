@@ -234,9 +234,9 @@ func processCapture(location: String):
 				# Determine the winning color (the king's opponent wins)
 				var winner_color = ""
 				if targetNode.get_child(0).Item_Color == 1:
-					winner_color = "White"
+					winner_color = "white"
 				else:
-					winner_color = "Black"
+					winner_color = "black"
 				GameData.winner = winner_color
 				# Change to the end game scene.
 				get_tree().change_scene_to_file("res://endgame.tscn")
@@ -1206,14 +1206,3 @@ func Reset_Tile_Colors():
 			if tile is TextureButton:
 				var is_white = (x + y) % 2 == 0
 				tile.texture_normal = load("res://assets/white_board.png") if is_white else load("res://assets/black_board.png")
-
-
-func _on_texture_button_pressed() -> void:
-	GameData.winner = "White"
-	get_tree().change_scene_to_file("res://endgame.tscn")
-	
-
-
-func _on_texture_button_2_pressed() -> void:
-	GameData.winner = "Black"
-	get_tree().change_scene_to_file("res://endgame.tscn")
